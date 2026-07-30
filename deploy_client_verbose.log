@@ -1,0 +1,55 @@
+[2026-07-30 10:40:32.707 PM] [34mdebug[39m:    
+[2026-07-30 10:40:32.710 PM] [34mdebug[39m:    ----------------------------------------------------------------------
+[2026-07-30 10:40:32.711 PM] [34mdebug[39m:    [1mCommand:      [22mC:\Program Files\nodejs\node.exe C:\Users\krish\AppData\Roaming\npm\node_modules\zcatalyst-cli\lib\bin\catalyst.js deploy --only client --verbose
+[2026-07-30 10:40:32.711 PM] [34mdebug[39m:    [1mCLI Version:  [22m1.27.0
+[2026-07-30 10:40:32.711 PM] [34mdebug[39m:    [1mPlatform:     [22mwin32
+[2026-07-30 10:40:32.711 PM] [34mdebug[39m:    [1mNode Version: [22mv24.18.0
+[2026-07-30 10:40:32.712 PM] [34mdebug[39m:    [1mTime:         [22mThu Jul 30 2026 22:40:32 GMT+0530 (India Standard Time)
+[2026-07-30 10:40:32.712 PM] [34mdebug[39m:    ----------------------------------------------------------------------
+[2026-07-30 10:40:32.712 PM] [34mdebug[39m:    
+[2026-07-30 10:40:33.928 PM] [34mdebug[39m:    > authorizing via signed-in user option
+[2026-07-30 10:40:33.930 PM] [34mdebug[39m:    > command requires scopes: ["ZohoCatalyst.projects.ALL","ZohoCatalyst.functions.ALL","ZohoCatalyst.webapp.ALL","ZohoCatalyst.appsail.Update"]
+[2026-07-30 10:40:34.055 PM] [34mdebug[39m:    >>>> HTTP REQUEST : GET https://api.catalyst.zoho.in/baas/v1/project/59526000000016004 
+
+[2026-07-30 10:40:35.611 PM] [34mdebug[39m:    <<<< HTTP RESPONSE : 200
+Response Headers: {"server":"ZGS","date":"Thu, 30 Jul 2026 17:10:35 GMT","content-type":"application/vnd.catalyst.v2+json","transfer-encoding":"chunked","connection":"keep-alive","x-content-type-options":"nosniff","cache-control":"private,no-cache,no-store,max-age=0,must-revalidate","pragma":"no-cache","expires":"Thu, 01 Jan 1970 00:00:00 GMT","x-frame-options":"DENY","strict-transport-security":"max-age=64072000; includeSubDomains; preload"}
+
+[2026-07-30 10:40:35.616 PM] [34mdebug[39m:    >>>> HTTP REQUEST : GET https://api.catalyst.zoho.in/baas/v1/project/59526000000016004/environment 
+
+[2026-07-30 10:40:35.711 PM] [34mdebug[39m:    <<<< HTTP RESPONSE : 200
+Response Headers: {"server":"ZGS","date":"Thu, 30 Jul 2026 17:10:35 GMT","content-type":"application/vnd.catalyst.v2+json","transfer-encoding":"chunked","connection":"keep-alive","x-content-type-options":"nosniff","cache-control":"private,no-cache,no-store,max-age=0,must-revalidate","pragma":"no-cache","expires":"Thu, 01 Jan 1970 00:00:00 GMT","x-frame-options":"DENY","strict-transport-security":"max-age=64072000; includeSubDomains; preload"}
+
+[2026-07-30 10:40:35.727 PM] [34mdebug[39m:    CatalystError: Module path does not exists
+    at C:\Users\krish\AppData\Roaming\npm\node_modules\zcatalyst-cli\lib\optional-import.js:71:15
+    at Generator.next (<anonymous>)
+    at fulfilled (C:\Users\krish\AppData\Roaming\npm\node_modules\zcatalyst-cli\lib\optional-import.js:38:58) {
+  status: 500,
+  exit: 1,
+  original: undefined,
+  context: undefined,
+  errorId: 'OPT-IMP-2',
+  arg: [
+    '\x1B[1m@hrica/zcatalyst-cli-plugin-react\x1B[22m',
+    '\x1B[3m\x1B[31mC:\\Users\\krish\\healthconnect-pro\\@hrica\\zcatalyst-cli-plugin-react\x1B[39m\x1B[23m',
+    '\x1B[1mC:\\Users\\krish\\healthconnect-pro\\client\x1B[22m'
+  ],
+  skipHelp: false,
+  filePath: 'C:\\Users\\krish\\AppData\\Roaming\\npm\\node_modules\\zcatalyst-cli\\lib\\docs\\optional-import'
+}
+[2026-07-30 10:40:35.729 PM] [34mdebug[39m:    CatalystError: Module path does not exists
+    at C:\Users\krish\AppData\Roaming\npm\node_modules\zcatalyst-cli\lib\optional-import.js:71:15
+    at Generator.next (<anonymous>)
+    at fulfilled (C:\Users\krish\AppData\Roaming\npm\node_modules\zcatalyst-cli\lib\optional-import.js:38:58) {
+  status: 500,
+  exit: 1,
+  original: undefined,
+  context: undefined,
+  errorId: 'OPT-IMP-2',
+  arg: [
+    '\x1B[1m@hrica/zcatalyst-cli-plugin-react\x1B[22m',
+    '\x1B[3m\x1B[31mC:\\Users\\krish\\healthconnect-pro\\@hrica\\zcatalyst-cli-plugin-react\x1B[39m\x1B[23m',
+    '\x1B[1mC:\\Users\\krish\\healthconnect-pro\\client\x1B[22m'
+  ],
+  skipHelp: false,
+  filePath: 'C:\\Users\\krish\\AppData\\Roaming\\npm\\node_modules\\zcatalyst-cli\\lib\\docs\\optional-import'
+}

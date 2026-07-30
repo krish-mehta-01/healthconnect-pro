@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "project": 1,
+    "env": 1
+  },
+  "actives": {
+    "project": 1,
+    "env": 1
+  },
+  "projects": [
+    {
+      "idx": 1,
+      "id": "59526000000016004",
+      "name": "Krish-Mehta-Zoho-Catalyst-Program",
+      "domain": {
+        "id": "50044494845",
+        "name": "krish-mehta-zoho-catalyst-program-60080685585.development"
+      },
+      "timezone": "Asia/Kolkata",
+      "env": [
+        {
+          "idx": 1,
+          "id": "60080685585",
+          "name": "Development",
+          "type": 3
+        }
+      ]
+    }
+  ]
+}

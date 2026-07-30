@@ -1,0 +1,12 @@
+{
+  "client": {
+    "source": "client",
+    "plugin": "zcatalyst-cli-plugin-react"
+  },
+  "appsail": [
+    {
+      "name": "healthconnect-backend",
+      "source": "backend"
+    }
+  ]
+}

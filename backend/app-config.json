@@ -1,0 +1,16 @@
+{
+  "command": "node server.js",
+  "build_path": ".",
+  "stack": "node18",
+  "env_variables": {
+    "NODE_ENV": "production",
+    "JWT_SECRET": "cafaa6e575f2c5d05e2fa7ea7e11b40d2846ce72271630dadb4dc1b45a6dec0e1b3529ba299384dff5068eba55d2d92a",
+    "SEED_SECRET": "c55624d3dbf2064be0b13f30fab81effffaf251586c9f0b2",
+    "GEMINI_API_KEY": "AIzaSyD-aTNoAEQQgvP1OAojOVEUelnUzR-mywM",
+    "ALLOWED_ORIGINS": ""
+  },
+  "memory": 256,
+  "scripts": {
+    "predeploy": "npm install --omit=dev"
+  }
+}
