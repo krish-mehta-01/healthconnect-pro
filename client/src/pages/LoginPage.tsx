@@ -20,7 +20,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [role, setRole] = useState('Facility_Staff');
+  const [role, setRole] = useState('');
   const [facilityId, setFacilityId] = useState('');
 
   useEffect(() => {
@@ -184,7 +184,9 @@ export default function LoginPage() {
                     className="auth-select"
                     value={role}
                     onChange={(e) => setRole(e.target.value)}
+                    required
                   >
+                    <option value="" disabled>Select Role...</option>
                     <optgroup label="Facility Leadership">
                       <option value="Facility_Head">Facility Head</option>
                       <option value="Facility_Supervisor">Facility Supervisor</option>
