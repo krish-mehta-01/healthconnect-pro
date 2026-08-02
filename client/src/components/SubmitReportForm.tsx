@@ -137,7 +137,7 @@ export default function SubmitReportForm({ onSuccess }: Props) {
         setTimeout(() => { onSuccess?.(); setSubmitSuccess(false); setWasQueued(false); }, 2500);
       } else {
         console.error('Submission failed:', err);
-        alert('Failed to submit report. Please try again.');
+        alert(err instanceof Error ? err.message : 'Failed to submit report. Please try again.');
       }
     } finally {
       setIsSubmitting(false);

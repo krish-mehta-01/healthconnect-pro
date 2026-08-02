@@ -81,7 +81,7 @@ export default function ReportDetailPage() {
       setIsEditingData(false);
     } catch (err) {
       console.error('Failed to save indicator data:', err);
-      alert('Failed to save changes. Please try again.');
+      alert(err instanceof Error ? err.message : 'Failed to save changes. Please try again.');
     } finally {
       setSavingData(false);
     }

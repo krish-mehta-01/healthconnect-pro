@@ -83,7 +83,7 @@ export default function PatientsPage() {
         setTimeout(() => setQueuedMessage(false), 4000);
       } else {
         console.error('Failed to save patient:', err);
-        alert('Failed to save patient. Please try again.');
+        alert(err instanceof Error ? err.message : 'Failed to save patient. Please try again.');
       }
     } finally {
       setSubmitting(false);

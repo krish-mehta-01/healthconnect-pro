@@ -10,6 +10,8 @@ import type {
   ReportingCycle, CurrentUser, User, Patient,
   WorkflowHistoryEntry, OverdueFacility,
 } from '../types';
+import { store } from '../store/store';
+import { logout } from '../store/authSlice';
 
 const BASE = import.meta.env.VITE_API_BASE_URL || '/server/healthconnect_api/api';
 
@@ -20,7 +22,18 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     ...options,
   });
   const json = await res.json();
-  if (!json.success) throw new Error(json.error || 'API request failed');
+  if (!json.success) {
+    // A 401 here means the session cookie is present but no longer valid server-side
+    // (expired, or signed with a since-rotated JWT_SECRET) — the UI would otherwise still
+    // show the user as logged in while every write silently fails with a misleading
+    // "failed to save" message. Force the app back to a real logged-out state so the
+    // actual problem (and fix — log in again) is visible instead of swallowed.
+    if (res.status === 401) {
+      store.dispatch(logout());
+      throw new Error('Your session has expired. Please log in again.');
+    }
+    throw new Error(json.error || 'API request failed');
+  }
   return json.data;
 }
 

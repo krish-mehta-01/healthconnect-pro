@@ -64,7 +64,7 @@ export default function InventoryPage() {
       setEditingStockId(null);
     } catch (err) {
       console.error('Failed to update stock:', err);
-      alert('Failed to update stock. Please try again.');
+      alert(err instanceof Error ? err.message : 'Failed to update stock. Please try again.');
     } finally {
       setSavingStock(false);
     }
