@@ -4,7 +4,7 @@ import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { fetchCurrentUser, setUser, loginUser, registerUser } from '../store/authSlice';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
-import { Heart, Shield, Activity, BarChart3, Moon, Sun, Languages } from 'lucide-react';
+import { Heart, Shield, Activity, BarChart3, Moon, Sun } from 'lucide-react';
 import './LoginPage.css';
 
 export default function LoginPage() {
@@ -63,19 +63,20 @@ export default function LoginPage() {
             background: 'var(--color-bg-elevated)',
             border: '1px solid var(--color-border)',
             color: 'var(--color-text-primary)',
+            width: '40px',
             height: '40px',
-            padding: '0 0.9rem',
-            borderRadius: '20px',
+            borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
-            gap: '0.4rem',
+            justifyContent: 'center',
             cursor: 'pointer',
-            fontSize: '0.85rem',
-            fontWeight: 600,
+            fontSize: '0.8rem',
+            fontWeight: 700,
           }}
           aria-label="Toggle Language"
+          title={language === 'en' ? 'Switch to Hindi' : 'Switch to English'}
         >
-          <Languages size={18} /> {language === 'en' ? 'हिंदी' : 'English'}
+          {language === 'en' ? 'हि' : 'En'}
         </button>
       </div>
 

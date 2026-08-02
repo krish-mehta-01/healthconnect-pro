@@ -3,7 +3,7 @@ import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { logout } from '../store/authSlice';
 import {
   LayoutDashboard, Building2, FileText, Package,
-  MessageSquare, LogOut, Menu, X, Heart, Sun, Moon, Settings, Users, Languages
+  MessageSquare, LogOut, Menu, X, Heart, Sun, Moon, Settings, Users
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -79,8 +79,8 @@ export default function Navbar() {
               </div>
             </div>
           )}
-          <button className="theme-toggle-btn" onClick={toggleLanguage} title="Toggle Language" style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', marginRight: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8rem', fontWeight: 600 }}>
-            <Languages size={18} /> {language === 'en' ? 'हिं' : 'EN'}
+          <button className="theme-toggle-btn" onClick={toggleLanguage} title="Toggle Language" style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', marginRight: '0.5rem', display: 'flex', alignItems: 'center', fontSize: '0.8rem', fontWeight: 700 }}>
+            {language === 'en' ? 'हि' : 'En'}
           </button>
           <button className="theme-toggle-btn" onClick={toggleTheme} title="Toggle Theme" style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', marginRight: '0.5rem', display: 'flex', alignItems: 'center' }}>
             {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
