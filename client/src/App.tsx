@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { store } from './store/store';
@@ -10,16 +11,25 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import FacilitiesPage from './pages/FacilitiesPage';
 import GeminiWidget from './components/GeminiWidget';
+import OfflineBanner from './components/OfflineBanner';
 import ReportsPage from './pages/ReportsPage';
 import ReportDetailPage from './pages/ReportDetailPage';
 import InventoryPage from './pages/InventoryPage';
 import FeedbackPage from './pages/FeedbackPage';
 import PatientsPage from './pages/PatientsPage';
 import AdminPage from './pages/AdminPage';
+import { flushQueue } from './utils/offlineQueue';
 import './App.css';
 
 function AppLayout() {
   const { isAuthenticated } = useAppSelector(s => s.auth);
+
+  // Catches the case where the app is (re)loaded already online with leftover queued
+  // actions from a previous offline session — the 'online' event listener in
+  // offlineQueue.ts only fires on a live offline->online transition, not on page load.
+  useEffect(() => {
+    if (navigator.onLine) flushQueue();
+  }, []);
 
   if (!isAuthenticated) {
     return (
@@ -32,6 +42,7 @@ function AppLayout() {
 
   return (
     <div className="app-layout">
+      <OfflineBanner />
       <Navbar />
       <main className="app-main">
         <Routes>

@@ -5,6 +5,12 @@ import { getFacilities, getCycles, getIndicators, getDepartments, submitNewRepor
 import { CheckCircle, ImagePlus } from 'lucide-react';
 import { canSubmitReport } from '../utils/permissions';
 import { useLanguage } from '../context/LanguageContext';
+import { enqueue, isNetworkError, registerQueueHandler } from '../utils/offlineQueue';
+
+// Registered once at module load — lets the offline queue replay a queued report submit
+// without this component needing to be mounted (the handler itself is what actually calls
+// the API; the queue just stores the payload until it can run).
+registerQueueHandler('submitReport', (payload) => submitNewReport(payload));
 
 interface Props {
   // Called once the report is submitted and the success message has been shown briefly —
@@ -28,6 +34,7 @@ export default function SubmitReportForm({ onSuccess }: Props) {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [wasQueued, setWasQueued] = useState(false);
 
   // OCR-assisted report reading — lets Facility_Staff/Data_Entry_Clerk snap a photo of a
   // paper register and read the scanned values off the extracted text while filling the
@@ -87,19 +94,32 @@ export default function SubmitReportForm({ onSuccess }: Props) {
     setIsSubmitting(true);
     setSubmitSuccess(false);
 
-    try {
-      const inds = Object.entries(indicatorValues).map(([indicator_id, value]) => ({
+    const reportPayload = {
+      facility_id: selectedFacility,
+      cycle_id: selectedCycle,
+      indicators: Object.entries(indicatorValues).map(([indicator_id, value]) => ({
         indicator_id,
         value,
         notes: ''
-      }));
+      })),
+    };
 
-      await submitNewReport({
-        facility_id: selectedFacility,
-        cycle_id: selectedCycle,
-        indicators: inds
-      });
+    // Offline: skip the network attempt entirely and queue immediately — no point waiting
+    // out a fetch that's guaranteed to fail with no connection.
+    if (!navigator.onLine) {
+      enqueue('submitReport', reportPayload);
+      setWasQueued(true);
+      setSubmitSuccess(true);
+      setIndicatorValues({});
+      setTimeout(() => { onSuccess?.(); setSubmitSuccess(false); setWasQueued(false); }, 2500);
+      setIsSubmitting(false);
+      return;
+    }
 
+    try {
+      await submitNewReport(reportPayload);
+
+      setWasQueued(false);
       setSubmitSuccess(true);
       setIndicatorValues({});
       dispatch(fetchDashboard()); // Refresh dashboard data
@@ -108,8 +128,17 @@ export default function SubmitReportForm({ onSuccess }: Props) {
         setSubmitSuccess(false);
       }, 2000);
     } catch (err) {
-      console.error('Submission failed:', err);
-      alert('Failed to submit report. Please try again.');
+      if (isNetworkError(err)) {
+        // Connection dropped mid-submit — queue it rather than losing the entered data.
+        enqueue('submitReport', reportPayload);
+        setWasQueued(true);
+        setSubmitSuccess(true);
+        setIndicatorValues({});
+        setTimeout(() => { onSuccess?.(); setSubmitSuccess(false); setWasQueued(false); }, 2500);
+      } else {
+        console.error('Submission failed:', err);
+        alert('Failed to submit report. Please try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -124,7 +153,7 @@ export default function SubmitReportForm({ onSuccess }: Props) {
         {submitSuccess && (
           <div style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#4ade80', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <CheckCircle size={20} />
-            {t('submitSuccess')}
+            {wasQueued ? 'Saved on this device — will send automatically once you\'re back online.' : t('submitSuccess')}
           </div>
         )}
 

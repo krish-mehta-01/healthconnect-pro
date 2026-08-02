@@ -4,7 +4,14 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import { Users, Plus, X, Pencil } from 'lucide-react';
 import { getPatients, createPatient, updatePatient } from '../services/api';
 import { canWrite, canRegisterPatient, canEditPatient } from '../utils/permissions';
+import { enqueue, isNetworkError, registerQueueHandler } from '../utils/offlineQueue';
 import type { Patient } from '../types';
+
+// Only new registrations are queued offline, not edits — an edit needs the current record
+// to diff against, which is a more complex offline scenario intentionally left out of this
+// pass (see the offline-first plan: the highest-value case is a field worker registering a
+// new patient with no signal, not editing one).
+registerQueueHandler('createPatient', (payload) => createPatient(payload));
 
 const emptyForm = { Patient_Name: '', Age: '', Gender: 'Male' };
 
@@ -19,6 +26,7 @@ export default function PatientsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [submitting, setSubmitting] = useState(false);
+  const [queuedMessage, setQueuedMessage] = useState(false);
 
   const loadPatients = () => {
     setLoading(true);
@@ -47,6 +55,18 @@ export default function PatientsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
+
+    // Editing an existing record always needs a live connection (see registerQueueHandler
+    // comment above) — only new-registration is offline-queueable.
+    if (!editingId && !navigator.onLine) {
+      enqueue('createPatient', form);
+      setShowForm(false);
+      setSubmitting(false);
+      setQueuedMessage(true);
+      setTimeout(() => setQueuedMessage(false), 4000);
+      return;
+    }
+
     try {
       if (editingId) {
         await updatePatient(editingId, form);
@@ -56,8 +76,15 @@ export default function PatientsPage() {
       setShowForm(false);
       loadPatients();
     } catch (err) {
-      console.error('Failed to save patient:', err);
-      alert('Failed to save patient. Please try again.');
+      if (!editingId && isNetworkError(err)) {
+        enqueue('createPatient', form);
+        setShowForm(false);
+        setQueuedMessage(true);
+        setTimeout(() => setQueuedMessage(false), 4000);
+      } else {
+        console.error('Failed to save patient:', err);
+        alert('Failed to save patient. Please try again.');
+      }
     } finally {
       setSubmitting(false);
     }
@@ -80,6 +107,12 @@ export default function PatientsPage() {
           </button>
         )}
       </div>
+
+      {queuedMessage && (
+        <div className="alert-banner alert-warning">
+          Saved on this device — this patient will be registered automatically once you're back online.
+        </div>
+      )}
 
       <div className="card">
         <div className="table-container">
