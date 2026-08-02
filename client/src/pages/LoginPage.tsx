@@ -38,7 +38,25 @@ export default function LoginPage() {
 
   return (
     <div className="auth-page">
-      <div style={{ position: 'absolute', top: '1rem', right: '1rem', zIndex: 10, display: 'flex', gap: '0.5rem' }}>
+      <div style={{ position: 'absolute', top: '1rem', right: '1rem', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
+        <button
+          onClick={toggleTheme}
+          style={{
+            background: 'var(--color-bg-elevated)',
+            border: '1px solid var(--color-border)',
+            color: 'var(--color-text-primary)',
+            width: '40px',
+            height: '40px',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+          }}
+          aria-label="Toggle Theme"
+        >
+          {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+        </button>
         <button
           onClick={toggleLanguage}
           style={{
@@ -58,24 +76,6 @@ export default function LoginPage() {
           aria-label="Toggle Language"
         >
           <Languages size={18} /> {language === 'en' ? 'हिंदी' : 'English'}
-        </button>
-        <button
-          onClick={toggleTheme}
-          style={{
-            background: 'var(--color-bg-elevated)',
-            border: '1px solid var(--color-border)',
-            color: 'var(--color-text-primary)',
-            width: '40px',
-            height: '40px',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-          }}
-          aria-label="Toggle Theme"
-        >
-          {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
         </button>
       </div>
 
@@ -141,7 +141,7 @@ export default function LoginPage() {
                   id="signup-name"
                   type="text"
                   className="auth-input"
-                  placeholder="e.g. Dr. Rajesh Thakur"
+                  placeholder={t('placeholderName')}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
@@ -155,7 +155,7 @@ export default function LoginPage() {
                 id="auth-email"
                 type="email"
                 className="auth-input"
-                placeholder="name@healthconnect.gov.in"
+                placeholder={t('placeholderEmail')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -168,7 +168,7 @@ export default function LoginPage() {
                 id="auth-password"
                 type="password"
                 className="auth-input"
-                placeholder="••••••••"
+                placeholder={t('placeholderPassword')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -186,7 +186,7 @@ export default function LoginPage() {
                     onChange={(e) => setRole(e.target.value)}
                     required
                   >
-                    <option value="" disabled>Select Role...</option>
+                    <option value="" disabled>{t('selectRole')}</option>
                     <optgroup label="Facility Leadership">
                       <option value="Facility_Head">Facility Head</option>
                       <option value="Facility_Supervisor">Facility Supervisor</option>
@@ -224,7 +224,7 @@ export default function LoginPage() {
                     id="signup-facility"
                     type="text"
                     className="auth-input"
-                    placeholder="e.g. 59526000000027011"
+                    placeholder={t('placeholderFacility')}
                     value={facilityId}
                     onChange={(e) => setFacilityId(e.target.value)}
                     required

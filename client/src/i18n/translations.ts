@@ -24,6 +24,11 @@ export const translations = {
   role: { en: 'Role', hi: 'भूमिका' },
   facilityCode: { en: 'Facility Code / ID', hi: 'सुविधा कोड / आईडी' },
   processing: { en: 'Processing...', hi: 'प्रोसेस हो रहा है...' },
+  selectRole: { en: 'Select Role...', hi: 'भूमिका चुनें...' },
+  placeholderName: { en: 'e.g. Dr. Rajesh Thakur', hi: 'उदा. डॉ. राजेश ठाकुर' },
+  placeholderEmail: { en: 'name@healthconnect.gov.in', hi: 'name@healthconnect.gov.in' },
+  placeholderPassword: { en: '••••••••', hi: '••••••••' },
+  placeholderFacility: { en: 'e.g. 59526000000027011', hi: 'उदा. 59526000000027011' },
 
   // ── Navbar ──
   navDashboard: { en: 'Dashboard', hi: 'डैशबोर्ड' },
