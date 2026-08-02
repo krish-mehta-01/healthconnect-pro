@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { fetchReport, submitReport, reviewReport, endorseReport } from '../store/reportsSlice';
+import { updateReportData } from '../services/api';
 import StatusBadge from '../components/StatusBadge';
 import LoadingSpinner from '../components/LoadingSpinner';
 import {
   ArrowLeft, Send, CheckCircle, XCircle, Clock,
-  FileText, User, Stamp
+  FileText, User, Stamp, Pencil
 } from 'lucide-react';
 import { canWrite, canSubmitReport, canReviewReports, canEndorseReport } from '../utils/permissions';
 
@@ -18,6 +19,9 @@ export default function ReportDetailPage() {
   const { user } = useAppSelector(s => s.auth);
   const [rejectNotes, setRejectNotes] = useState('');
   const [showRejectForm, setShowRejectForm] = useState(false);
+  const [isEditingData, setIsEditingData] = useState(false);
+  const [editValues, setEditValues] = useState<Record<string, string>>({});
+  const [savingData, setSavingData] = useState(false);
 
   useEffect(() => {
     if (id) dispatch(fetchReport(id));
@@ -51,6 +55,36 @@ export default function ReportDetailPage() {
   const handleReject = () => {
     if (id) dispatch(reviewReport({ report_id: id, status: 'Rejected', notes: rejectNotes })).unwrap().catch((err: any) => alert(err.message || 'Rejection failed'));
     setShowRejectForm(false);
+  };
+
+  const startEditData = () => {
+    const values: Record<string, string> = {};
+    (report.indicators || []).forEach((ind, i) => {
+      values[ind.ROWID || String(i)] = ind.Metric_Value;
+    });
+    setEditValues(values);
+    setIsEditingData(true);
+  };
+
+  const handleSaveData = async () => {
+    if (!id) return;
+    setSavingData(true);
+    try {
+      const payload = (report.indicators || []).map((ind, i) => ({
+        ROWID: ind.ROWID,
+        indicator_id: ind.Indicator_ID,
+        value: editValues[ind.ROWID || String(i)] ?? ind.Metric_Value,
+        notes: ind.Notes,
+      }));
+      await updateReportData(id, payload);
+      await dispatch(fetchReport(id));
+      setIsEditingData(false);
+    } catch (err) {
+      console.error('Failed to save indicator data:', err);
+      alert('Failed to save changes. Please try again.');
+    } finally {
+      setSavingData(false);
+    }
   };
 
   return (
@@ -109,10 +143,15 @@ export default function ReportDetailPage() {
         </div>
       )}
 
-      {/* Indicator Data */}
+      {/* Indicator Data — editable while still a Draft, by the same roles that can submit it */}
       <div className="card">
-        <div className="card-header">
+        <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h3><FileText size={18} /> Health Indicator Data</h3>
+          {canSubmit && report.indicators && report.indicators.length > 0 && !isEditingData && (
+            <button className="btn btn-outline btn-sm" onClick={startEditData}>
+              <Pencil size={14} /> Edit Values
+            </button>
+          )}
         </div>
         <div className="table-container">
           <table className="data-table">
@@ -124,13 +163,25 @@ export default function ReportDetailPage() {
               </tr>
             </thead>
             <tbody>
-              {report.indicators && report.indicators.length > 0 ? report.indicators.map((ind, i) => (
-                <tr key={i}>
-                  <td>{ind.Indicator_ID || ind.indicator_name || `Indicator ${i + 1}`}</td>
-                  <td className="td-mono td-value">{ind.Metric_Value}</td>
-                  <td className="td-muted">{ind.Notes || '—'}</td>
-                </tr>
-              )) : (
+              {report.indicators && report.indicators.length > 0 ? report.indicators.map((ind, i) => {
+                const key = ind.ROWID || String(i);
+                return (
+                  <tr key={i}>
+                    <td>{ind.Indicator_ID || ind.indicator_name || `Indicator ${i + 1}`}</td>
+                    <td className="td-mono td-value">
+                      {isEditingData ? (
+                        <input
+                          type="text"
+                          value={editValues[key] ?? ''}
+                          onChange={e => setEditValues(prev => ({ ...prev, [key]: e.target.value }))}
+                          style={{ width: '120px', padding: '0.35rem', borderRadius: '6px', background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)' }}
+                        />
+                      ) : ind.Metric_Value}
+                    </td>
+                    <td className="td-muted">{ind.Notes || '—'}</td>
+                  </tr>
+                );
+              }) : (
                 <tr>
                   <td colSpan={3} className="empty-state">No indicator data recorded.</td>
                 </tr>
@@ -138,6 +189,14 @@ export default function ReportDetailPage() {
             </tbody>
           </table>
         </div>
+        {isEditingData && (
+          <div className="card-body" style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', paddingTop: 0 }}>
+            <button className="btn btn-ghost" onClick={() => setIsEditingData(false)}>Cancel</button>
+            <button className="btn btn-primary" onClick={handleSaveData} disabled={savingData}>
+              {savingData ? 'Saving...' : 'Save Changes'}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Workflow History */}

@@ -142,7 +142,7 @@ export default function ReportAuditTable() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                   
                   {/* Facility Info */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', background: 'var(--color-bg-secondary)', padding: '1rem', borderRadius: '8px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', background: 'var(--color-bg-secondary)', padding: '1rem', borderRadius: '8px' }}>
                     <div>
                       <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>Facility</div>
                       <div style={{ fontWeight: 600 }}>{facilities.find(f => f.ROWID === reportDetails.Facility_ID)?.Facility_Name}</div>

@@ -68,9 +68,9 @@ export default function GrievanceTriage() {
                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Clock size={14} /> {g.Created_Date ? new Date(g.Created_Date).toLocaleDateString() : 'Recent'}</span>
                   </div>
                   {canWrite(user?.role) && (
-                    <button className="btn btn-outline" style={{ borderColor: '#ef4444', color: '#ef4444', padding: '0.4rem 0.75rem', fontSize: '0.85rem' }}>
-                      Escalate to Magistrate
-                    </button>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#ef4444', fontWeight: 600 }}>
+                      <ShieldAlert size={14} /> Auto-escalated
+                    </span>
                   )}
                 </div>
               </div>

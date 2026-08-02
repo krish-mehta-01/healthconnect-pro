@@ -127,7 +127,7 @@ export default function SubmitReportForm({ onSuccess }: Props) {
         )}
 
         <form onSubmit={handleReportSubmit}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <label style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>Facility</label>
               <select
@@ -204,7 +204,7 @@ export default function SubmitReportForm({ onSuccess }: Props) {
             .map(({ dept, deptIndicators }) => (
               <div key={dept.ROWID} style={{ marginBottom: '2rem' }}>
                 <div style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem' }}>{dept.Dept_Name}</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem' }}>
                   {deptIndicators.map(ind => (
                     <div key={ind.ROWID} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                       <label style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>{ind.Indicator_Name}</label>
@@ -227,7 +227,7 @@ export default function SubmitReportForm({ onSuccess }: Props) {
             return (
               <div style={{ marginBottom: '2rem' }}>
                 <div style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem' }}>Other Indicators</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem' }}>
                   {ungrouped.map(ind => (
                     <div key={ind.ROWID} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                       <label style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>{ind.Indicator_Name}</label>

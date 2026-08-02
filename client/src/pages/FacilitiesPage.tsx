@@ -1,29 +1,46 @@
 import { useEffect, useState } from 'react';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
-import { fetchFacilities, addFacility, removeFacility } from '../store/facilitiesSlice';
+import { fetchFacilities, addFacility, editFacility, removeFacility } from '../store/facilitiesSlice';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { Building2, Plus, Trash2, MapPin, Users, X } from 'lucide-react';
+import { Building2, Plus, Trash2, Pencil, MapPin, Users, X } from 'lucide-react';
 import type { Facility } from '../types';
 import { canWrite } from '../utils/permissions';
+
+const emptyForm: Partial<Facility> = { Facility_Name: '', Type: 'PHC', District: '', Block: '', Capacity: 50 };
 
 export default function FacilitiesPage() {
   const dispatch = useAppDispatch();
   const { items, loading } = useAppSelector(s => s.facilities);
   const { user } = useAppSelector(s => s.auth);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState<Partial<Facility>>({
-    Facility_Name: '', Type: 'PHC', District: '', Block: '', Capacity: 50,
-  });
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState<Partial<Facility>>(emptyForm);
 
   useEffect(() => {
     dispatch(fetchFacilities());
   }, [dispatch]);
 
+  const openCreate = () => {
+    setEditingId(null);
+    setForm(emptyForm);
+    setShowForm(true);
+  };
+
+  const openEdit = (facility: Facility) => {
+    setEditingId(facility.ROWID);
+    setForm({ Facility_Name: facility.Facility_Name, Type: facility.Type, District: facility.District, Block: facility.Block, Capacity: facility.Capacity });
+    setShowForm(true);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await dispatch(addFacility(form));
+    if (editingId) {
+      await dispatch(editFacility({ id: editingId, data: form }));
+    } else {
+      await dispatch(addFacility(form));
+    }
     setShowForm(false);
-    setForm({ Facility_Name: '', Type: 'PHC', District: '', Block: '', Capacity: 50 });
+    setForm(emptyForm);
   };
 
   const handleDelete = (id: string) => {
@@ -44,7 +61,7 @@ export default function FacilitiesPage() {
           <p className="page-subtitle">Manage health centers across the state network</p>
         </div>
         {isAdmin && (
-          <button className="btn btn-primary" onClick={() => setShowForm(true)}>
+          <button className="btn btn-primary" onClick={openCreate}>
             <Plus size={18} /> Add Facility
           </button>
         )}
@@ -70,9 +87,14 @@ export default function FacilitiesPage() {
             <div className="facility-card-header">
               <div className="facility-type-badge">{facility.Type?.replace(/_/g, ' ')}</div>
               {isAdmin && (
-                <button className="btn-icon btn-danger-ghost" onClick={() => handleDelete(facility.ROWID)} title="Remove">
-                  <Trash2 size={16} />
-                </button>
+                <div style={{ display: 'flex', gap: '0.25rem' }}>
+                  <button className="btn-icon" onClick={() => openEdit(facility)} title="Edit">
+                    <Pencil size={16} />
+                  </button>
+                  <button className="btn-icon btn-danger-ghost" onClick={() => handleDelete(facility.ROWID)} title="Remove">
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               )}
             </div>
             <h3 className="facility-name">
@@ -90,7 +112,7 @@ export default function FacilitiesPage() {
             <h3>No Facilities Yet</h3>
             <p>Add your first health facility to start reporting.</p>
             {isAdmin && (
-              <button className="btn btn-primary" onClick={() => setShowForm(true)}>
+              <button className="btn btn-primary" onClick={openCreate}>
                 <Plus size={18} /> Add Facility
               </button>
             )}
@@ -98,12 +120,12 @@ export default function FacilitiesPage() {
         )}
       </div>
 
-      {/* Add Facility Modal */}
+      {/* Add/Edit Facility Modal */}
       {showForm && (
         <div className="modal-overlay" onClick={() => setShowForm(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Onboard New Facility</h2>
+              <h2>{editingId ? 'Edit Facility' : 'Onboard New Facility'}</h2>
               <button className="btn-icon" onClick={() => setShowForm(false)}><X size={20} /></button>
             </div>
             <form onSubmit={handleSubmit} className="modal-body">
@@ -163,7 +185,7 @@ export default function FacilitiesPage() {
               </div>
               <div className="modal-footer">
                 <button type="button" className="btn btn-ghost" onClick={() => setShowForm(false)}>Cancel</button>
-                <button type="submit" className="btn btn-primary">Create Facility</button>
+                <button type="submit" className="btn btn-primary">{editingId ? 'Save Changes' : 'Create Facility'}</button>
               </div>
             </form>
           </div>

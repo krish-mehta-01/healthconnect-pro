@@ -3,15 +3,22 @@ import {
   getDepartments, createDepartment,
   getCycles, createCycle,
   getIndicators, createIndicator,
-  getUsers, getActivityLog,
+  getUsers, createUser, getActivityLog, getFacilities,
 } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { Settings, Plus, X, Layers, CalendarClock, Activity, Users as UsersIcon, History } from 'lucide-react';
-import type { Department, ReportingCycle, Indicator, User, WorkflowHistoryEntry } from '../types';
+import type { Department, ReportingCycle, Indicator, User, WorkflowHistoryEntry, Facility, UserRole } from '../types';
 import { useAppSelector } from '../store/hooks';
 import { canWrite } from '../utils/permissions';
 
 type Tab = 'departments' | 'cycles' | 'indicators' | 'users' | 'activity';
+
+const ALL_ROLES: UserRole[] = [
+  'State_Admin', 'District_Officer', 'Block_Officer', 'Auditor',
+  'Facility_Head', 'Facility_Supervisor', 'Doctor', 'Staff_Nurse',
+  'ASHA_Worker', 'ANM', 'Registration_Clerk', 'Facility_Staff',
+  'Data_Entry_Clerk', 'Pharmacist', 'Store_Keeper',
+];
 
 export default function AdminPage() {
   const { user } = useAppSelector(s => s.auth);
@@ -31,6 +38,7 @@ export default function AdminPage() {
   const [cycles, setCycles] = useState<ReportingCycle[]>([]);
   const [indicators, setIndicators] = useState<Indicator[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [facilities, setFacilities] = useState<Facility[]>([]);
   const [activityLog, setActivityLog] = useState<WorkflowHistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -38,6 +46,7 @@ export default function AdminPage() {
   const [deptForm, setDeptForm] = useState({ Dept_Name: '', Head_Officer_ID: '' });
   const [cycleForm, setCycleForm] = useState({ Cycle_Name: '', Start_Date: '', End_Date: '', Status: 'Active' as 'Active' | 'Closed' });
   const [indForm, setIndForm] = useState({ Indicator_Name: '', Data_Type: 'number' as Indicator['Data_Type'], Dept_ID: '' });
+  const [userForm, setUserForm] = useState({ name: '', email_id: '', role: 'Facility_Staff' as UserRole, facility_id: '', password: '' });
 
   const loadAll = async () => {
     setLoading(true);
@@ -49,6 +58,7 @@ export default function AdminPage() {
       if (i.length === 0 && d.length > 0) setIndForm(f => ({ ...f, Dept_ID: d[0].ROWID }));
       if (isStateAdminUser) {
         getUsers().then(setUsers).catch(err => console.error('Failed to load users:', err));
+        getFacilities().then(setFacilities).catch(err => console.error('Failed to load facilities:', err));
       }
       if (canSeeActivityLog) {
         getActivityLog().then(setActivityLog).catch(err => console.error('Failed to load activity log:', err));
@@ -86,6 +96,14 @@ export default function AdminPage() {
     loadAll();
   };
 
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await createUser(userForm);
+    setUserForm({ name: '', email_id: '', role: 'Facility_Staff', facility_id: '', password: '' });
+    setShowForm(false);
+    loadAll();
+  };
+
   if (loading) return <LoadingSpinner message="Loading configuration..." />;
 
   const deptNameById = (id: string) => departments.find(d => d.ROWID === id)?.Dept_Name || id;
@@ -98,9 +116,9 @@ export default function AdminPage() {
           <h1 className="page-title"><Settings size={28} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />Network Configuration</h1>
           <p className="page-subtitle">Manage departments, reporting cycles, and health indicators for the whole network</p>
         </div>
-        {canWrite(user?.role) && (activeTab === 'departments' || activeTab === 'cycles' || activeTab === 'indicators') && (
+        {canWrite(user?.role) && (activeTab === 'departments' || activeTab === 'cycles' || activeTab === 'indicators' || (activeTab === 'users' && isStateAdminUser)) && (
           <button className="btn btn-primary" onClick={() => setShowForm(true)}>
-            <Plus size={18} /> Add {activeTab === 'departments' ? 'Department' : activeTab === 'cycles' ? 'Cycle' : 'Indicator'}
+            <Plus size={18} /> Add {activeTab === 'departments' ? 'Department' : activeTab === 'cycles' ? 'Cycle' : activeTab === 'users' ? 'User' : 'Indicator'}
           </button>
         )}
       </div>
@@ -246,7 +264,7 @@ export default function AdminPage() {
         <div className="modal-overlay" onClick={() => setShowForm(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Add {activeTab === 'departments' ? 'Department' : activeTab === 'cycles' ? 'Reporting Cycle' : 'Indicator'}</h2>
+              <h2>Add {activeTab === 'departments' ? 'Department' : activeTab === 'cycles' ? 'Reporting Cycle' : activeTab === 'users' ? 'User' : 'Indicator'}</h2>
               <button className="btn-icon" onClick={() => setShowForm(false)}><X size={20} /></button>
             </div>
 
@@ -327,6 +345,42 @@ export default function AdminPage() {
                 <div className="modal-footer">
                   <button type="button" className="btn btn-ghost" onClick={() => setShowForm(false)}>Cancel</button>
                   <button type="submit" className="btn btn-primary">Create Indicator</button>
+                </div>
+              </form>
+            )}
+
+            {activeTab === 'users' && (
+              <form onSubmit={handleCreateUser} className="modal-body">
+                <div className="form-group">
+                  <label>Full Name</label>
+                  <input type="text" value={userForm.name} onChange={e => setUserForm({ ...userForm, name: e.target.value })} placeholder="e.g., Dr. Rajesh Thakur" required />
+                </div>
+                <div className="form-group">
+                  <label>Email Address</label>
+                  <input type="email" value={userForm.email_id} onChange={e => setUserForm({ ...userForm, email_id: e.target.value })} placeholder="name@healthconnect.gov.in" required />
+                </div>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Role</label>
+                    <select value={userForm.role} onChange={e => setUserForm({ ...userForm, role: e.target.value as UserRole })}>
+                      {ALL_ROLES.map(r => <option key={r} value={r}>{r.replace(/_/g, ' ')}</option>)}
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Facility</label>
+                    <select value={userForm.facility_id} onChange={e => setUserForm({ ...userForm, facility_id: e.target.value })} required>
+                      <option value="">Select facility...</option>
+                      {facilities.map(f => <option key={f.ROWID} value={f.ROWID}>{f.Facility_Name}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label>Password (optional)</label>
+                  <input type="password" value={userForm.password} onChange={e => setUserForm({ ...userForm, password: e.target.value })} placeholder="Leave blank to auto-generate" />
+                </div>
+                <div className="modal-footer">
+                  <button type="button" className="btn btn-ghost" onClick={() => setShowForm(false)}>Cancel</button>
+                  <button type="submit" className="btn btn-primary">Create User</button>
                 </div>
               </form>
             )}
