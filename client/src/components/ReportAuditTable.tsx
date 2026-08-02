@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getReports, getFacilities, getCycles, approveReportById, getReport } from '../services/api';
-import { ClipboardCheck, Eye, Check, X, History, Activity } from 'lucide-react';
+import { ClipboardCheck, Eye, Check, X, History, Activity, AlertTriangle } from 'lucide-react';
 import LoadingSpinner from './LoadingSpinner';
 import StatusBadge from './StatusBadge';
 import { useAppSelector } from '../store/hooks';
@@ -153,9 +153,16 @@ export default function ReportAuditTable() {
                     </div>
                   </div>
 
-                  {/* Health Indicators */}
+                  {/* Health Indicators — rows flagged IsAnomaly (see attachAnomalyFlags in
+                      reports.routes.js) are highlighted since this is the actual
+                      approve/reject decision point, not just a display page. */}
                   <div>
                     <h4 style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '1rem' }}><Activity size={18} /> Reported Metrics</h4>
+                    {reportDetails.indicators?.some((ind: any) => ind.IsAnomaly) && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-warning)', background: 'rgba(245, 158, 11, 0.1)', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.9rem' }}>
+                        <AlertTriangle size={16} /> Some values below are far outside this facility's usual range — double-check before approving.
+                      </div>
+                    )}
                     {reportDetails.indicators?.length > 0 ? (
                       <table className="data-table" style={{ background: 'var(--color-bg-primary)', borderRadius: '8px', overflow: 'hidden' }}>
                         <thead>
@@ -167,9 +174,12 @@ export default function ReportAuditTable() {
                         </thead>
                         <tbody>
                           {reportDetails.indicators.map((ind: any) => (
-                            <tr key={ind.ROWID}>
+                            <tr key={ind.ROWID} className={ind.IsAnomaly ? 'row-warning' : ''}>
                               <td className="td-mono">{ind.Indicator_ID}</td>
-                              <td className="td-value" style={{ fontSize: '1.1rem' }}>{ind.Metric_Value}</td>
+                              <td className="td-value" style={{ fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                {ind.Metric_Value}
+                                {ind.IsAnomaly && <AlertTriangle size={14} color="var(--color-warning)" title={`Usual average: ~${ind.HistoricalAverage}`} />}
+                              </td>
                               <td style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>{ind.Notes || '—'}</td>
                             </tr>
                           ))}

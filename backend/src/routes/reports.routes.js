@@ -36,6 +36,52 @@ function computeTotalScore(indicators) {
   return String(sum);
 }
 
+// Lightweight anomaly flagging: no ML, no training data — just compares each indicator's
+// value against that same facility's own historical average for that indicator. Flags a
+// value as anomalous only once there's at least 2 prior data points to compare against
+// (avoids false positives on a facility's first-ever report) and the deviation is large
+// (outside 0.25x–1.75x of the historical mean). This is a scoped, buildable stand-in for
+// outbreak-style early-warning detection — not a claim of real epidemiological modeling.
+const ANOMALY_LOW_RATIO = 0.25;
+const ANOMALY_HIGH_RATIO = 1.75;
+
+async function attachAnomalyFlags(req, facilityId, currentReportId, indicators) {
+  const indicatorIds = [...new Set(indicators.map((i) => i.Indicator_ID).filter(Boolean))];
+  if (indicatorIds.length === 0) return indicators;
+
+  const otherReports = flatten(
+    await zcql(req, `SELECT ROWID FROM ${TABLES.HEALTH_REPORTS} WHERE Facility_ID = ${q(facilityId)} AND ROWID != ${q(currentReportId)}`),
+    TABLES.HEALTH_REPORTS
+  );
+  if (otherReports.length === 0) return indicators;
+  const reportIds = otherReports.map((r) => r.ROWID);
+
+  const historicalRows = flatten(
+    await zcql(req, `SELECT Indicator_ID, Metric_Value FROM ${TABLES.REPORT_DATA} WHERE Report_ID IN (${reportIds.map(q).join(',')}) AND Indicator_ID IN (${indicatorIds.map(q).join(',')})`),
+    TABLES.REPORT_DATA
+  );
+
+  const valuesByIndicator = new Map();
+  for (const row of historicalRows) {
+    const n = Number(row.Metric_Value);
+    if (!Number.isFinite(n)) continue; // skip non-numeric indicators (text/boolean data types)
+    const bucket = valuesByIndicator.get(row.Indicator_ID) || [];
+    bucket.push(n);
+    valuesByIndicator.set(row.Indicator_ID, bucket);
+  }
+
+  return indicators.map((ind) => {
+    const history = valuesByIndicator.get(ind.Indicator_ID);
+    const currentValue = Number(ind.Metric_Value);
+    if (!history || history.length < 2 || !Number.isFinite(currentValue)) {
+      return { ...ind, IsAnomaly: false };
+    }
+    const average = history.reduce((a, b) => a + b, 0) / history.length;
+    const isAnomaly = average > 0 && (currentValue > average * ANOMALY_HIGH_RATIO || currentValue < average * ANOMALY_LOW_RATIO);
+    return { ...ind, IsAnomaly: isAnomaly, HistoricalAverage: Math.round(average * 100) / 100, HistoricalCount: history.length };
+  });
+}
+
 router.get('/', async (req, res) => {
   try {
     const { facility_id, status, cycle_id } = req.query;
@@ -135,10 +181,11 @@ router.get('/:id', async (req, res) => {
   try {
     const id = req.params.id;
     const report = await table(req, TABLES.HEALTH_REPORTS).getRow(id);
-    const indicators = flatten(
+    const rawIndicators = flatten(
       await zcql(req, `SELECT * FROM ${TABLES.REPORT_DATA} WHERE Report_ID = ${q(id)}`),
       TABLES.REPORT_DATA
     );
+    const indicators = await attachAnomalyFlags(req, report.Facility_ID, id, rawIndicators);
     const rawHistory = flatten(
       await zcql(req, `SELECT * FROM ${TABLES.WORKFLOW_HISTORY} WHERE Report_ID = ${q(id)} ORDER BY Action_Timestamp ASC`),
       TABLES.WORKFLOW_HISTORY

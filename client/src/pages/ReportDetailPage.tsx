@@ -7,7 +7,7 @@ import StatusBadge from '../components/StatusBadge';
 import LoadingSpinner from '../components/LoadingSpinner';
 import {
   ArrowLeft, Send, CheckCircle, XCircle, Clock,
-  FileText, User, Stamp, Pencil
+  FileText, User, Stamp, Pencil, AlertTriangle
 } from 'lucide-react';
 import { canWrite, canSubmitReport, canReviewReports, canEndorseReport } from '../utils/permissions';
 
@@ -143,6 +143,18 @@ export default function ReportDetailPage() {
         </div>
       )}
 
+      {/* Anomaly banner — flags indicator values far outside this facility's own history for
+          that indicator (see attachAnomalyFlags in reports.routes.js). Not a diagnosis, just
+          a "double-check this before approving" signal. */}
+      {report.indicators && report.indicators.some(ind => ind.IsAnomaly) && (
+        <div className="alert-banner alert-warning">
+          <AlertTriangle size={20} />
+          <span>
+            <strong>{report.indicators.filter(ind => ind.IsAnomaly).length} indicator(s)</strong> are far outside this facility's usual range for this cycle — worth a second look before approving.
+          </span>
+        </div>
+      )}
+
       {/* Indicator Data — editable while still a Draft, by the same roles that can submit it */}
       <div className="card">
         <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -166,7 +178,7 @@ export default function ReportDetailPage() {
               {report.indicators && report.indicators.length > 0 ? report.indicators.map((ind, i) => {
                 const key = ind.ROWID || String(i);
                 return (
-                  <tr key={i}>
+                  <tr key={i} className={ind.IsAnomaly ? 'row-warning' : ''}>
                     <td>{ind.Indicator_ID || ind.indicator_name || `Indicator ${i + 1}`}</td>
                     <td className="td-mono td-value">
                       {isEditingData ? (
@@ -176,7 +188,16 @@ export default function ReportDetailPage() {
                           onChange={e => setEditValues(prev => ({ ...prev, [key]: e.target.value }))}
                           style={{ width: '120px', padding: '0.35rem', borderRadius: '6px', background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)' }}
                         />
-                      ) : ind.Metric_Value}
+                      ) : (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                          {ind.Metric_Value}
+                          {ind.IsAnomaly && (
+                            <span title={`Usual average for this facility: ~${ind.HistoricalAverage} (from ${ind.HistoricalCount} prior reports)`}>
+                              <AlertTriangle size={14} color="var(--color-warning)" />
+                            </span>
+                          )}
+                        </span>
+                      )}
                     </td>
                     <td className="td-muted">{ind.Notes || '—'}</td>
                   </tr>

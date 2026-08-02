@@ -98,6 +98,11 @@ export interface ReportData {
   Notes: string;
   // Joined
   indicator_name?: string;
+  // Lightweight anomaly flag — set by GET /reports/:id, comparing this value against the
+  // same facility's historical average for this indicator (see reports.routes.js).
+  IsAnomaly?: boolean;
+  HistoricalAverage?: number;
+  HistoricalCount?: number;
 }
 
 export interface WorkflowHistoryEntry {
