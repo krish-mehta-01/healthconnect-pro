@@ -29,9 +29,11 @@ export function canReRouteInventory(role?: string | null): boolean {
   return REVIEW_ROLES.includes(role || '');
 }
 
-// Only the two facility-level data-entry roles submit health reports (new drafts and
-// submitting a draft for approval).
-const REPORT_SUBMITTER_ROLES = ['Facility_Staff', 'Data_Entry_Clerk'];
+// Facility_Staff and Data_Entry_Clerk submit health reports (new drafts and submitting a
+// draft for approval). Community_Health_Officer also does — an HWC is typically staffed
+// by just the CHO, so they combine report-submission with patient-registration duty
+// rather than having a separate clerk role.
+const REPORT_SUBMITTER_ROLES = ['Facility_Staff', 'Data_Entry_Clerk', 'Community_Health_Officer'];
 
 export function canSubmitReport(role?: string | null): boolean {
   return REPORT_SUBMITTER_ROLES.includes(role || '');
@@ -61,11 +63,13 @@ export function isStateAdmin(role?: string | null): boolean {
   return role === 'State_Admin';
 }
 
-// The five front-line roles that actually register a new patient at their facility —
-// see the role hierarchy table: Doctor, Staff_Nurse, ASHA_Worker and ANM all register
-// patients as part of their clinical/community duties, and Registration_Clerk exists
-// solely for this ("parchi"/OPD token registration is its only capability).
-const PATIENT_REGISTRAR_ROLES = ['Doctor', 'Staff_Nurse', 'ASHA_Worker', 'ANM', 'Registration_Clerk'];
+// The front-line roles that actually register a new patient at their facility — see the
+// role hierarchy table: Doctor, Staff_Nurse, ASHA_Worker and ANM all register patients as
+// part of their clinical/community duties, Registration_Clerk exists solely for this
+// ("parchi"/OPD token registration is its only capability), and Community_Health_Officer
+// (the HWC lead) does it alongside report submission since HWCs are typically one-person
+// facilities.
+const PATIENT_REGISTRAR_ROLES = ['Doctor', 'Staff_Nurse', 'ASHA_Worker', 'ANM', 'Registration_Clerk', 'Community_Health_Officer'];
 
 export function canRegisterPatient(role?: string | null): boolean {
   return PATIENT_REGISTRAR_ROLES.includes(role || '');
@@ -113,7 +117,7 @@ export function hasFullNetworkView(role?: string | null): boolean {
   return FULL_NETWORK_VIEW_ROLES.includes(role || '');
 }
 
-const REPORTS_NAV_ROLES = ['State_Admin', 'District_Officer', 'Block_Officer', 'Auditor', 'Facility_Staff', 'Data_Entry_Clerk', 'Facility_Head', 'Facility_Supervisor'];
+const REPORTS_NAV_ROLES = ['State_Admin', 'District_Officer', 'Block_Officer', 'Auditor', 'Facility_Staff', 'Data_Entry_Clerk', 'Facility_Head', 'Facility_Supervisor', 'Community_Health_Officer'];
 
 export function canSeeReportsNav(role?: string | null): boolean {
   return REPORTS_NAV_ROLES.includes(role || '');
@@ -131,7 +135,7 @@ export function canSeeFeedbackNav(role?: string | null): boolean {
   return FEEDBACK_NAV_ROLES.includes(role || '');
 }
 
-const PATIENTS_NAV_ROLES = ['Doctor', 'Staff_Nurse', 'ASHA_Worker', 'ANM', 'Registration_Clerk', 'Facility_Head', 'Facility_Supervisor'];
+const PATIENTS_NAV_ROLES = ['Doctor', 'Staff_Nurse', 'ASHA_Worker', 'ANM', 'Registration_Clerk', 'Facility_Head', 'Facility_Supervisor', 'Community_Health_Officer'];
 
 export function canSeePatientsNav(role?: string | null): boolean {
   return PATIENTS_NAV_ROLES.includes(role || '');

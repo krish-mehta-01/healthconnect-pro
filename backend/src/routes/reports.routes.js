@@ -197,7 +197,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-router.post('/submit', requireRole('Facility_Staff', 'Data_Entry_Clerk'), async (req, res) => {
+router.post('/submit', requireRole('Facility_Staff', 'Data_Entry_Clerk', 'Community_Health_Officer'), async (req, res) => {
   try {
     const { facility_id, cycle_id, indicators } = req.body || {};
     if (!facility_id || !cycle_id || !Array.isArray(indicators)) {
@@ -227,7 +227,7 @@ router.post('/submit', requireRole('Facility_Staff', 'Data_Entry_Clerk'), async 
   }
 });
 
-router.put('/:id/submit', requireRole('Facility_Staff', 'Data_Entry_Clerk'), async (req, res) => {
+router.put('/:id/submit', requireRole('Facility_Staff', 'Data_Entry_Clerk', 'Community_Health_Officer'), async (req, res) => {
   try {
     const updated = await table(req, TABLES.HEALTH_REPORTS).updateRow({ ROWID: req.params.id, Status: 'Submitted' });
     await addHistory(req, req.params.id, 'Submitted for approval');
@@ -303,7 +303,7 @@ router.post('/:id/approve', requireRole('Block_Officer', 'District_Officer', 'St
   }
 });
 
-router.put('/:id/data', requireRole('Facility_Staff', 'Data_Entry_Clerk'), async (req, res) => {
+router.put('/:id/data', requireRole('Facility_Staff', 'Data_Entry_Clerk', 'Community_Health_Officer'), async (req, res) => {
   try {
     const { indicators } = req.body || {};
     if (!Array.isArray(indicators)) return fail(res, 400, 'indicators array is required');

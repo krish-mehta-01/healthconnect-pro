@@ -164,6 +164,7 @@ export default function LoginPage() {
                     <optgroup label="Facility Leadership">
                       <option value="Facility_Head">Facility Head</option>
                       <option value="Facility_Supervisor">Facility Supervisor</option>
+                      <option value="Community_Health_Officer">Community Health Officer (HWC)</option>
                     </optgroup>
                     <optgroup label="Clinical Staff">
                       <option value="Doctor">Doctor</option>

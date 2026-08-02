@@ -37,7 +37,8 @@ export type UserRole =
   | 'ANM'
   | 'Registration_Clerk'
   | 'Store_Keeper'
-  | 'Facility_Supervisor';
+  | 'Facility_Supervisor'
+  | 'Community_Health_Officer';
 
 export interface User {
   ROWID: string;

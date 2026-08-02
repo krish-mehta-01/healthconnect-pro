@@ -26,10 +26,12 @@ router.get('/', async (req, res) => {
 });
 
 // Only the front-line roles that actually register patients — Doctor, Staff_Nurse,
-// ASHA_Worker, ANM, Registration_Clerk. Facility_Head/Facility_Supervisor are read-only
-// oversight roles; officers/State_Admin/Auditor/Pharmacist/Data_Entry_Clerk have no
+// ASHA_Worker, ANM, Registration_Clerk, Community_Health_Officer (the HWC lead, who
+// combines report-submission and patient-registration duty since an HWC is typically
+// staffed by just one person). Facility_Head/Facility_Supervisor are read-only oversight
+// roles; officers/State_Admin/Auditor/Pharmacist/Data_Entry_Clerk have no
 // patient-registration duty at all.
-router.post('/', requireRole('Doctor', 'Staff_Nurse', 'ASHA_Worker', 'ANM', 'Registration_Clerk'), async (req, res) => {
+router.post('/', requireRole('Doctor', 'Staff_Nurse', 'ASHA_Worker', 'ANM', 'Registration_Clerk', 'Community_Health_Officer'), async (req, res) => {
   try {
     // Force-scope every new patient to the registering user's own facility — these roles
     // are all single-facility-scoped, and the client never needs to (and shouldn't be

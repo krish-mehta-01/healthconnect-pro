@@ -17,6 +17,7 @@ import GrievanceTriage from '../components/GrievanceTriage';
 import ResourceTransferModal from '../components/ResourceTransferModal';
 import ReportAuditTable from '../components/ReportAuditTable';
 import SubmitReportForm from '../components/SubmitReportForm';
+import { canSubmitReport } from '../utils/permissions';
 import type { OverdueFacility } from '../types';
 
 export default function DashboardPage() {
@@ -24,8 +25,9 @@ export default function DashboardPage() {
   const { stats, loading: dashboardLoading } = useAppSelector(s => s.dashboard);
   const { user } = useAppSelector(s => s.auth);
   const isOfficerOrAdmin = ['State_Admin', 'District_Officer', 'Block_Officer'].includes(user?.role || '');
-  // Report submission is only meaningful for roles that own a facility's reporting duty.
-  const isReportSubmitter = ['Facility_Staff', 'Data_Entry_Clerk'].includes(user?.role || '');
+  // Report submission is only meaningful for roles that own a facility's reporting duty —
+  // see utils/permissions.ts for the canonical role list (single source of truth).
+  const isReportSubmitter = canSubmitReport(user?.role);
   // Officer/admin review widgets (grievance escalation, resource re-routing, approval queue)
   // are shown to Auditor too (full read-only visibility) but never to Pharmacist, whose
   // dashboard is scoped to KPI cards + charts only.

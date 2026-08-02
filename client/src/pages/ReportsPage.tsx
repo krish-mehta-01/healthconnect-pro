@@ -8,7 +8,7 @@ import StatusBadge from '../components/StatusBadge';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { FileText, Plus, Search, X, Eye } from 'lucide-react';
 import type { Indicator } from '../types';
-import { canWrite } from '../utils/permissions';
+import { canWrite, canSubmitReport } from '../utils/permissions';
 
 export default function ReportsPage() {
   const dispatch = useAppDispatch();
@@ -16,7 +16,7 @@ export default function ReportsPage() {
   const { items, loading } = useAppSelector(s => s.reports);
   const { items: facilities } = useAppSelector(s => s.facilities);
   const { user } = useAppSelector(s => s.auth);
-  const canCreateReport = ['Facility_Staff', 'Data_Entry_Clerk'].includes(user?.role || '') && canWrite(user?.role);
+  const canCreateReport = canSubmitReport(user?.role) && canWrite(user?.role);
 
   const [indicators, setIndicators] = useState<Indicator[]>([]);
   const [showCreate, setShowCreate] = useState(false);

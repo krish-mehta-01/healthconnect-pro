@@ -15,7 +15,7 @@ type Tab = 'departments' | 'cycles' | 'indicators' | 'users' | 'activity';
 
 const ALL_ROLES: UserRole[] = [
   'State_Admin', 'District_Officer', 'Block_Officer', 'Auditor',
-  'Facility_Head', 'Facility_Supervisor', 'Doctor', 'Staff_Nurse',
+  'Facility_Head', 'Facility_Supervisor', 'Community_Health_Officer', 'Doctor', 'Staff_Nurse',
   'ASHA_Worker', 'ANM', 'Registration_Clerk', 'Facility_Staff',
   'Data_Entry_Clerk', 'Pharmacist', 'Store_Keeper',
 ];

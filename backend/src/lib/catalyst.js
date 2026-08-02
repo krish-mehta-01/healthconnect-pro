@@ -73,6 +73,7 @@ async function getScopedFacilityIds(req) {
     'Facility_Staff', 'Pharmacist', 'Data_Entry_Clerk',
     'Facility_Head', 'Doctor', 'Staff_Nurse', 'ASHA_Worker', 'ANM',
     'Registration_Clerk', 'Store_Keeper', 'Facility_Supervisor',
+    'Community_Health_Officer',
   ];
   if (FACILITY_SCOPED_ROLES.includes(role)) return [req.user.facility_id];
 
