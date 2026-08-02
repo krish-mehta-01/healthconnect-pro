@@ -4,6 +4,7 @@ import { fetchDashboard } from '../store/dashboardSlice';
 import { getFacilities, getCycles, getIndicators, getDepartments, submitNewReport, extractOCR } from '../services/api';
 import { CheckCircle, ImagePlus } from 'lucide-react';
 import { canSubmitReport } from '../utils/permissions';
+import { useLanguage } from '../context/LanguageContext';
 
 interface Props {
   // Called once the report is submitted and the success message has been shown briefly —
@@ -14,6 +15,7 @@ interface Props {
 export default function SubmitReportForm({ onSuccess }: Props) {
   const dispatch = useAppDispatch();
   const { user } = useAppSelector(s => s.auth);
+  const { t } = useLanguage();
 
   const [facilities, setFacilities] = useState<any[]>([]);
   const [cycles, setCycles] = useState<any[]>([]);
@@ -116,41 +118,41 @@ export default function SubmitReportForm({ onSuccess }: Props) {
   return (
     <div className="card" style={{ maxWidth: '800px', margin: '0 auto' }}>
       <div className="card-header">
-        <h3>Submit New Facility Report</h3>
+        <h3>{t('submitReportTitle')}</h3>
       </div>
       <div className="card-body" style={{ padding: '2rem' }}>
         {submitSuccess && (
           <div style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#4ade80', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <CheckCircle size={20} />
-            Report submitted successfully! Redirecting...
+            {t('submitSuccess')}
           </div>
         )}
 
         <form onSubmit={handleReportSubmit}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <label style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>Facility</label>
+              <label style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>{t('facility')}</label>
               <select
                 style={{ padding: '0.75rem', borderRadius: '8px', background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)' }}
                 value={selectedFacility}
                 onChange={e => setSelectedFacility(e.target.value)}
                 required
               >
-                <option value="">Select Facility...</option>
+                <option value="">{t('selectFacility')}</option>
                 {facilities.map(f => (
                   <option key={f.ROWID} value={f.ROWID}>{f.Facility_Name}</option>
                 ))}
               </select>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <label style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>Reporting Cycle</label>
+              <label style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>{t('reportingCycle')}</label>
               <select
                 style={{ padding: '0.75rem', borderRadius: '8px', background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)' }}
                 value={selectedCycle}
                 onChange={e => setSelectedCycle(e.target.value)}
                 required
               >
-                <option value="">Select Cycle...</option>
+                <option value="">{t('selectCycle')}</option>
                 {cycles.map(c => (
                   <option key={c.ROWID} value={c.ROWID}>{c.Cycle_Name}</option>
                 ))}
@@ -210,7 +212,7 @@ export default function SubmitReportForm({ onSuccess }: Props) {
                       <label style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>{ind.Indicator_Name}</label>
                       <input
                         type="number"
-                        placeholder="Enter value"
+                        placeholder={t('enterValue')}
                         style={{ padding: '0.75rem', borderRadius: '8px', background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)' }}
                         value={indicatorValues[ind.ROWID] || ''}
                         onChange={e => handleIndicatorChange(ind.ROWID, e.target.value)}
@@ -233,7 +235,7 @@ export default function SubmitReportForm({ onSuccess }: Props) {
                       <label style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>{ind.Indicator_Name}</label>
                       <input
                         type="number"
-                        placeholder="Enter value"
+                        placeholder={t('enterValue')}
                         style={{ padding: '0.75rem', borderRadius: '8px', background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)' }}
                         value={indicatorValues[ind.ROWID] || ''}
                         onChange={e => handleIndicatorChange(ind.ROWID, e.target.value)}
@@ -247,7 +249,7 @@ export default function SubmitReportForm({ onSuccess }: Props) {
 
           <div style={{ marginTop: '2.5rem', display: 'flex', justifyContent: 'flex-end' }}>
             <button type="submit" className="btn btn-primary" style={{ padding: '0.75rem 2rem', fontSize: '1rem' }} disabled={isSubmitting}>
-              {isSubmitting ? 'Submitting...' : 'Submit Report'}
+              {isSubmitting ? t('submitting') : t('submitReport')}
             </button>
           </div>
         </form>

@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { fetchCurrentUser, setUser, loginUser, registerUser } from '../store/authSlice';
 import { useTheme } from '../context/ThemeContext';
-import { Heart, Shield, Activity, BarChart3, Moon, Sun } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
+import { Heart, Shield, Activity, BarChart3, Moon, Sun, Languages } from 'lucide-react';
 import './LoginPage.css';
 
 export default function LoginPage() {
@@ -11,6 +12,7 @@ export default function LoginPage() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
+  const { language, toggleLanguage, t } = useLanguage();
 
   const [isSignUp, setIsSignUp] = useState(false);
 
@@ -36,28 +38,46 @@ export default function LoginPage() {
 
   return (
     <div className="auth-page">
-      <button
-        onClick={toggleTheme}
-        style={{
-          position: 'absolute',
-          top: '1rem',
-          right: '1rem',
-          background: 'var(--color-bg-elevated)',
-          border: '1px solid var(--color-border)',
-          color: 'var(--color-text-primary)',
-          width: '40px',
-          height: '40px',
-          borderRadius: '50%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'pointer',
-          zIndex: 10
-        }}
-        aria-label="Toggle Theme"
-      >
-        {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-      </button>
+      <div style={{ position: 'absolute', top: '1rem', right: '1rem', zIndex: 10, display: 'flex', gap: '0.5rem' }}>
+        <button
+          onClick={toggleLanguage}
+          style={{
+            background: 'var(--color-bg-elevated)',
+            border: '1px solid var(--color-border)',
+            color: 'var(--color-text-primary)',
+            height: '40px',
+            padding: '0 0.9rem',
+            borderRadius: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.4rem',
+            cursor: 'pointer',
+            fontSize: '0.85rem',
+            fontWeight: 600,
+          }}
+          aria-label="Toggle Language"
+        >
+          <Languages size={18} /> {language === 'en' ? 'हिंदी' : 'English'}
+        </button>
+        <button
+          onClick={toggleTheme}
+          style={{
+            background: 'var(--color-bg-elevated)',
+            border: '1px solid var(--color-border)',
+            color: 'var(--color-text-primary)',
+            width: '40px',
+            height: '40px',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+          }}
+          aria-label="Toggle Theme"
+        >
+          {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+        </button>
+      </div>
 
       {/* LEFT: Branding Hero */}
       <div className="auth-hero">
@@ -66,21 +86,21 @@ export default function LoginPage() {
           <Heart size={48} className="auth-hero-icon" />
           <h1>HealthConnect<span className="text-accent">Pro</span></h1>
           <p className="auth-subtitle">
-            Enterprise Health Management Information System
+            {t('appTagline')}
           </p>
 
           <div className="auth-features">
             <div className="auth-feature">
               <Shield size={24} />
-              <span>Multi-tier facility reporting & compliance</span>
+              <span>{t('featureReporting')}</span>
             </div>
             <div className="auth-feature">
               <Activity size={24} />
-              <span>AI-powered sentiment analysis & OCR extraction</span>
+              <span>{t('featureAI')}</span>
             </div>
             <div className="auth-feature">
               <BarChart3 size={24} />
-              <span>Real-time executive KPI dashboards</span>
+              <span>{t('featureDashboards')}</span>
             </div>
           </div>
         </div>
@@ -90,8 +110,8 @@ export default function LoginPage() {
       <div className="auth-form-side">
         <div className="auth-card">
           <div className="auth-card-header">
-            <h2>{isSignUp ? 'Create Account' : 'Welcome Back'}</h2>
-            <p>{isSignUp ? 'Join the HealthConnect network' : 'Sign in to access your dashboard'}</p>
+            <h2>{isSignUp ? t('createAccount') : t('welcomeBack')}</h2>
+            <p>{isSignUp ? t('signUpSubtitle') : t('signInSubtitle')}</p>
           </div>
 
           <div className="auth-toggle">
@@ -100,14 +120,14 @@ export default function LoginPage() {
               className={`auth-toggle-btn ${!isSignUp ? 'active' : ''}`}
               onClick={() => setIsSignUp(false)}
             >
-              Sign In
+              {t('signIn')}
             </button>
             <button
               type="button"
               className={`auth-toggle-btn ${isSignUp ? 'active' : ''}`}
               onClick={() => setIsSignUp(true)}
             >
-              Sign Up
+              {t('signUp')}
             </button>
           </div>
 
@@ -116,7 +136,7 @@ export default function LoginPage() {
           <form className="auth-form" onSubmit={handleSubmit}>
             {isSignUp && (
               <div className="auth-input-group">
-                <label>Full Name</label>
+                <label>{t('fullName')}</label>
                 <input
                   type="text"
                   className="auth-input"
@@ -129,7 +149,7 @@ export default function LoginPage() {
             )}
 
             <div className="auth-input-group">
-              <label>Email Address</label>
+              <label>{t('emailAddress')}</label>
               <input
                 type="email"
                 className="auth-input"
@@ -141,7 +161,7 @@ export default function LoginPage() {
             </div>
 
             <div className="auth-input-group">
-              <label>Password</label>
+              <label>{t('password')}</label>
               <input
                 type="password"
                 className="auth-input"
@@ -155,7 +175,7 @@ export default function LoginPage() {
             {isSignUp && (
               <>
                 <div className="auth-input-group">
-                  <label>Role</label>
+                  <label>{t('role')}</label>
                   <select
                     className="auth-select"
                     value={role}
@@ -193,7 +213,7 @@ export default function LoginPage() {
                 </div>
 
                 <div className="auth-input-group">
-                  <label>Facility Code / ID</label>
+                  <label>{t('facilityCode')}</label>
                   <input
                     type="text"
                     className="auth-input"
@@ -207,7 +227,7 @@ export default function LoginPage() {
             )}
 
             <button type="submit" className="auth-submit-btn" disabled={loading}>
-              {loading ? 'Processing...' : (isSignUp ? 'Create Account' : 'Sign In')}
+              {loading ? t('processing') : (isSignUp ? t('createAccount') : t('signIn'))}
             </button>
           </form>
 

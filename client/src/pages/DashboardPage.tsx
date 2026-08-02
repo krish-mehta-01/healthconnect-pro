@@ -18,12 +18,14 @@ import ResourceTransferModal from '../components/ResourceTransferModal';
 import ReportAuditTable from '../components/ReportAuditTable';
 import SubmitReportForm from '../components/SubmitReportForm';
 import { canSubmitReport } from '../utils/permissions';
+import { useLanguage } from '../context/LanguageContext';
 import type { OverdueFacility } from '../types';
 
 export default function DashboardPage() {
   const dispatch = useAppDispatch();
   const { stats, loading: dashboardLoading } = useAppSelector(s => s.dashboard);
   const { user } = useAppSelector(s => s.auth);
+  const { t } = useLanguage();
   const isOfficerOrAdmin = ['State_Admin', 'District_Officer', 'Block_Officer'].includes(user?.role || '');
   // Report submission is only meaningful for roles that own a facility's reporting duty —
   // see utils/permissions.ts for the canonical role list (single source of truth).
@@ -83,9 +85,9 @@ export default function DashboardPage() {
     <div className="page dashboard-page">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Command Center</h1>
+          <h1 className="page-title">{t('commandCenter')}</h1>
           <p className="page-subtitle">
-            Welcome back, <strong>{user?.name}</strong> • {new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            {t('welcomeBackUser')}, <strong>{user?.name}</strong> • {new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
         </div>
       </div>
@@ -101,7 +103,7 @@ export default function DashboardPage() {
             style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.25rem', borderRadius: '8px' }}
           >
             <LayoutDashboard size={18} />
-            Overview
+            {t('overview')}
           </button>
           <button
             className={`btn ${activeTab === 'submit' ? 'btn-primary' : 'btn-outline'}`}
@@ -109,7 +111,7 @@ export default function DashboardPage() {
             style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.25rem', borderRadius: '8px' }}
           >
             <PlusCircle size={18} />
-            Submit New Report
+            {t('submitNewReport')}
           </button>
         </div>
       )}

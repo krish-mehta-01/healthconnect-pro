@@ -3,9 +3,10 @@ import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { logout } from '../store/authSlice';
 import {
   LayoutDashboard, Building2, FileText, Package,
-  MessageSquare, LogOut, Menu, X, Heart, Sun, Moon, Settings, Users
+  MessageSquare, LogOut, Menu, X, Heart, Sun, Moon, Settings, Users, Languages
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 import { useState } from 'react';
 import {
   hasFullNetworkView as checkFullNetworkView, canSeeReportsNav, canSeeInventoryNav,
@@ -17,6 +18,7 @@ export default function Navbar() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
+  const { language, toggleLanguage, t } = useLanguage();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleLogout = () => {
@@ -29,13 +31,13 @@ export default function Navbar() {
   // Page-visibility role lists live in utils/permissions.ts (single source of truth,
   // shared with any other place that needs the same role-gating decision).
   const links = [
-    { to: '/', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
-    ...(checkFullNetworkView(role) ? [{ to: '/facilities', icon: <Building2 size={20} />, label: 'Facilities' }] : []),
-    ...(canSeeReportsNav(role) ? [{ to: '/reports', icon: <FileText size={20} />, label: 'Reports' }] : []),
-    ...(canSeePatientsNav(role) ? [{ to: '/patients', icon: <Users size={20} />, label: 'Patients' }] : []),
-    ...(canSeeInventoryNav(role) ? [{ to: '/inventory', icon: <Package size={20} />, label: 'Inventory' }] : []),
-    ...(canSeeFeedbackNav(role) ? [{ to: '/feedback', icon: <MessageSquare size={20} />, label: 'Feedback' }] : []),
-    ...(canSeeAdminNav(role) ? [{ to: '/admin', icon: <Settings size={20} />, label: 'Admin' }] : []),
+    { to: '/', icon: <LayoutDashboard size={20} />, label: t('navDashboard') },
+    ...(checkFullNetworkView(role) ? [{ to: '/facilities', icon: <Building2 size={20} />, label: t('navFacilities') }] : []),
+    ...(canSeeReportsNav(role) ? [{ to: '/reports', icon: <FileText size={20} />, label: t('navReports') }] : []),
+    ...(canSeePatientsNav(role) ? [{ to: '/patients', icon: <Users size={20} />, label: t('navPatients') }] : []),
+    ...(canSeeInventoryNav(role) ? [{ to: '/inventory', icon: <Package size={20} />, label: t('navInventory') }] : []),
+    ...(canSeeFeedbackNav(role) ? [{ to: '/feedback', icon: <MessageSquare size={20} />, label: t('navFeedback') }] : []),
+    ...(canSeeAdminNav(role) ? [{ to: '/admin', icon: <Settings size={20} />, label: t('navAdmin') }] : []),
   ];
 
   return (
@@ -77,10 +79,13 @@ export default function Navbar() {
               </div>
             </div>
           )}
+          <button className="theme-toggle-btn" onClick={toggleLanguage} title="Toggle Language" style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', marginRight: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8rem', fontWeight: 600 }}>
+            <Languages size={18} /> {language === 'en' ? 'हिं' : 'EN'}
+          </button>
           <button className="theme-toggle-btn" onClick={toggleTheme} title="Toggle Theme" style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', marginRight: '0.5rem', display: 'flex', alignItems: 'center' }}>
             {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
           </button>
-          <button className="logout-btn" onClick={handleLogout} title="Logout">
+          <button className="logout-btn" onClick={handleLogout} title={t('logout')}>
             <LogOut size={18} />
           </button>
         </div>

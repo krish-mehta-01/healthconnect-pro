@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { store } from './store/store';
 import { ThemeProvider } from './context/ThemeContext';
+import { LanguageProvider } from './context/LanguageContext';
 import { useAppSelector } from './store/hooks';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -54,9 +55,11 @@ function AppLayout() {
 function App() {
   return (
     <ThemeProvider>
-      <BrowserRouter>
-        <AppLayout />
-      </BrowserRouter>
+      <LanguageProvider>
+        <BrowserRouter>
+          <AppLayout />
+        </BrowserRouter>
+      </LanguageProvider>
     </ThemeProvider>
   );
 }
