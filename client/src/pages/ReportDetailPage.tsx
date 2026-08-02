@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
-import { fetchReport, submitReport, reviewReport } from '../store/reportsSlice';
+import { fetchReport, submitReport, reviewReport, endorseReport } from '../store/reportsSlice';
 import StatusBadge from '../components/StatusBadge';
 import LoadingSpinner from '../components/LoadingSpinner';
 import {
   ArrowLeft, Send, CheckCircle, XCircle, Clock,
-  FileText, User
+  FileText, User, Stamp
 } from 'lucide-react';
+import { canWrite, canSubmitReport, canReviewReports, canEndorseReport } from '../utils/permissions';
 
 export default function ReportDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -24,19 +25,31 @@ export default function ReportDetailPage() {
 
   if (loading || !report) return <LoadingSpinner message="Loading report..." />;
 
-  const canSubmit = report.Status === 'Draft';
-  const canReview = ['Block_Officer', 'District_Officer', 'State_Admin'].includes(user?.role || '') && report.Status === 'Submitted';
+  const canSubmit = report.Status === 'Draft' && canSubmitReport(user?.role) && canWrite(user?.role);
+  // Facility_Head can only endorse their own facility's reports, and only while Submitted
+  // (the endorsement gate on the backend enforces the same two checks authoritatively).
+  const canEndorse = canEndorseReport(user?.role) && report.Status === 'Submitted'
+    && report.Facility_ID === user?.facility_id && canWrite(user?.role);
+  // Officers may act on Submitted (no Facility_Head at this facility yet) or Endorsed
+  // (Facility_Head already signed off) reports — the backend's hard gate is the actual
+  // authority on which of the two is currently valid; a blocked attempt surfaces its
+  // reason via the alert in handleApprove/handleReject below.
+  const canReview = canReviewReports(user?.role) && ['Submitted', 'Endorsed'].includes(report.Status) && canWrite(user?.role);
 
   const handleSubmit = () => {
     if (id) dispatch(submitReport(id));
   };
 
+  const handleEndorse = () => {
+    if (id) dispatch(endorseReport({ report_id: id }));
+  };
+
   const handleApprove = () => {
-    if (id) dispatch(reviewReport({ report_id: id, status: 'Approved' }));
+    if (id) dispatch(reviewReport({ report_id: id, status: 'Approved' })).unwrap().catch((err: any) => alert(err.message || 'Approval failed'));
   };
 
   const handleReject = () => {
-    if (id) dispatch(reviewReport({ report_id: id, status: 'Rejected', notes: rejectNotes }));
+    if (id) dispatch(reviewReport({ report_id: id, status: 'Rejected', notes: rejectNotes })).unwrap().catch((err: any) => alert(err.message || 'Rejection failed'));
     setShowRejectForm(false);
   };
 
@@ -60,6 +73,11 @@ export default function ReportDetailPage() {
         {canSubmit && (
           <button className="btn btn-primary" onClick={handleSubmit}>
             <Send size={18} /> Submit for Approval
+          </button>
+        )}
+        {canEndorse && (
+          <button className="btn btn-primary" onClick={handleEndorse}>
+            <Stamp size={18} /> Endorse Report
           </button>
         )}
         {canReview && (

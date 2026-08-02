@@ -8,7 +8,7 @@
 export interface Facility {
   ROWID: string;
   Facility_Name: string;
-  Type: 'PHC' | 'CHC' | 'Sub_Center' | 'District_Hospital' | 'State_Hospital';
+  Type: 'HWC' | 'Sub_Center' | 'PHC' | 'CHC' | 'Sub_District_Hospital' | 'District_Hospital' | 'State_Hospital';
   District: string;
   Block?: string;
   Capacity: number;
@@ -22,7 +22,22 @@ export interface Department {
   Head_Officer_ID: string;
 }
 
-export type UserRole = 'State_Admin' | 'District_Officer' | 'Block_Officer' | 'Facility_Staff';
+export type UserRole =
+  | 'State_Admin'
+  | 'District_Officer'
+  | 'Block_Officer'
+  | 'Facility_Staff'
+  | 'Data_Entry_Clerk'
+  | 'Pharmacist'
+  | 'Auditor'
+  | 'Facility_Head'
+  | 'Doctor'
+  | 'Staff_Nurse'
+  | 'ASHA_Worker'
+  | 'ANM'
+  | 'Registration_Clerk'
+  | 'Store_Keeper'
+  | 'Facility_Supervisor';
 
 export interface User {
   ROWID: string;
@@ -59,7 +74,7 @@ export interface Indicator {
   Dept_ID: string;
 }
 
-export type ReportStatus = 'Draft' | 'Submitted' | 'Approved' | 'Rejected';
+export type ReportStatus = 'Draft' | 'Submitted' | 'Endorsed' | 'Approved' | 'Rejected';
 
 export interface HealthReport {
   ROWID: string;
@@ -92,6 +107,8 @@ export interface WorkflowHistoryEntry {
   Status_Change: string;
   Action_Timestamp: string;
   Comments?: string;
+  // Joined — only populated by the system-wide /reports/activity-log endpoint.
+  Facility_ID?: string | null;
 }
 
 // ── Module 3: Resource Management ──
@@ -164,6 +181,18 @@ export interface DashboardStats {
   lowStockAlerts: FacilityInventory[];
   urgentFeedback: SentimentTriage[];
   facilityPerformance: { name: string; score: number }[];
+  totalPatients: number;
+  pendingSupplyRequests: number;
+  totalInventoryItems: number;
+}
+
+// A facility with no HealthReports row in the currently Active reporting cycle
+// (returned by GET /reports/overdue).
+export interface OverdueFacility {
+  Facility_ID: string;
+  Facility_Name: string;
+  District: string;
+  Block?: string;
 }
 
 // ── API Response ──

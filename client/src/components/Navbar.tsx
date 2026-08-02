@@ -3,10 +3,14 @@ import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { logout } from '../store/authSlice';
 import {
   LayoutDashboard, Building2, FileText, Package,
-  MessageSquare, LogOut, Menu, X, Heart, Sun, Moon
+  MessageSquare, LogOut, Menu, X, Heart, Sun, Moon, Settings, Users
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useState } from 'react';
+import {
+  hasFullNetworkView as checkFullNetworkView, canSeeReportsNav, canSeeInventoryNav,
+  canSeeFeedbackNav, canSeePatientsNav, canSeeAdminNav,
+} from '../utils/permissions';
 
 export default function Navbar() {
   const { user } = useAppSelector(s => s.auth);
@@ -20,12 +24,18 @@ export default function Navbar() {
     navigate('/login');
   };
 
+  const role = user?.role;
+
+  // Page-visibility role lists live in utils/permissions.ts (single source of truth,
+  // shared with any other place that needs the same role-gating decision).
   const links = [
     { to: '/', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
-    { to: '/facilities', icon: <Building2 size={20} />, label: 'Facilities' },
-    { to: '/reports', icon: <FileText size={20} />, label: 'Reports' },
-    { to: '/inventory', icon: <Package size={20} />, label: 'Inventory' },
-    { to: '/feedback', icon: <MessageSquare size={20} />, label: 'Feedback' },
+    ...(checkFullNetworkView(role) ? [{ to: '/facilities', icon: <Building2 size={20} />, label: 'Facilities' }] : []),
+    ...(canSeeReportsNav(role) ? [{ to: '/reports', icon: <FileText size={20} />, label: 'Reports' }] : []),
+    ...(canSeePatientsNav(role) ? [{ to: '/patients', icon: <Users size={20} />, label: 'Patients' }] : []),
+    ...(canSeeInventoryNav(role) ? [{ to: '/inventory', icon: <Package size={20} />, label: 'Inventory' }] : []),
+    ...(canSeeFeedbackNav(role) ? [{ to: '/feedback', icon: <MessageSquare size={20} />, label: 'Feedback' }] : []),
+    ...(canSeeAdminNav(role) ? [{ to: '/admin', icon: <Settings size={20} />, label: 'Admin' }] : []),
   ];
 
   return (

@@ -1,0 +1,16 @@
+{
+  "command": "node server.js",
+  "build_path": ".",
+  "stack": "node18",
+  "env_variables": {
+    "NODE_ENV": "production",
+    "JWT_SECRET": "<generate with: node -e \"console.log(require('crypto').randomBytes(48).toString('hex'))\">",
+    "SEED_SECRET": "<generate with: node -e \"console.log(require('crypto').randomBytes(24).toString('hex'))\">",
+    "GEMINI_API_KEY": "<get from https://aistudio.google.com/apikey>",
+    "ALLOWED_ORIGINS": ""
+  },
+  "memory": 256,
+  "scripts": {
+    "predeploy": "npm install --omit=dev"
+  }
+}

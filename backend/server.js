@@ -3,7 +3,6 @@
 require('dotenv').config();
 
 const express = require('express');
-const cors = require('cors');
 const cookieParser = require('cookie-parser');
 
 const { requireAuth } = require('./src/middleware/auth');
@@ -22,33 +21,33 @@ const grievancesRoutes = require('./src/routes/grievances.routes');
 const patientsRoutes = require('./src/routes/patients.routes');
 const dashboardRoutes = require('./src/routes/dashboard.routes');
 const ocrRoutes = require('./src/routes/ocr.routes');
-const adminRoutes = require('./src/routes/admin.routes');
+const chatRoutes = require('./src/routes/chat.routes');
 
 const app = express();
 
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map((o) => o.trim()).filter(Boolean);
-
-app.use(cors({
-  origin(origin, callback) {
-    if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    return callback(new Error('Not allowed by CORS'));
-  },
-  credentials: true,
-}));
+// No app-level CORS middleware: Catalyst's AppSail gateway already sends
+// Access-Control-Allow-Origin/Credentials/Methods/Headers for every request.
+// Adding our own here duplicates the header, which browsers reject outright.
 app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
 
 app.get('/health', (req, res) => res.status(200).send('ok'));
 
 app.use('/api/auth', authRoutes);
-app.use('/api/admin', adminRoutes);
 // Facilities are readable pre-login so the signup form can populate its facility picker;
 // write routes inside facilities.routes.js are still individually role-gated.
 app.use('/api/facilities', facilitiesRoutes);
 
 app.use('/api', requireAuth);
+// Defense-in-depth: Auditors have read-only access across the entire app. Rejecting
+// every non-GET request here (rather than per-route) covers every current and future
+// write route in one place without needing individual role checks everywhere.
+app.use('/api', (req, res, next) => {
+  if (req.user?.role === 'Auditor' && req.method !== 'GET') {
+    return res.status(403).json({ success: false, error: 'Auditors have read-only access' });
+  }
+  next();
+});
 app.use('/api/users', usersRoutes);
 app.use('/api/departments', departmentsRoutes);
 app.use('/api/cycles', cyclesRoutes);
@@ -61,6 +60,7 @@ app.use('/api/grievances', grievancesRoutes);
 app.use('/api/patients', patientsRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/ocr', ocrRoutes);
+app.use('/api/chat', chatRoutes);
 
 app.use((req, res) => res.status(404).json({ success: false, error: 'Not found' }));
 // eslint-disable-next-line no-unused-vars

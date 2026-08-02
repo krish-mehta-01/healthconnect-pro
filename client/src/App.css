@@ -45,7 +45,7 @@
   align-items: center;
   padding: 0 var(--space-6);
   gap: var(--space-6);
-  background: rgba(10, 15, 26, 0.85);
+  background: var(--color-bg-card);
   backdrop-filter: blur(20px) saturate(1.5);
   border-bottom: 1px solid var(--color-border);
 }
@@ -351,6 +351,10 @@
   margin-bottom: var(--space-6);
 }
 
+.card-body {
+  padding: var(--space-5) var(--space-6);
+}
+
 .card-header {
   padding: var(--space-5) var(--space-6);
   border-bottom: 1px solid var(--color-border);
@@ -496,7 +500,7 @@
 }
 
 .data-table thead {
-  background: rgba(15, 23, 42, 0.5);
+  background: var(--color-bg-secondary);
 }
 
 .data-table th {
@@ -592,6 +596,7 @@
 
 .status-draft { background: rgba(100, 116, 139, 0.15); color: #94a3b8; }
 .status-submitted { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+.status-endorsed { background: rgba(99, 102, 241, 0.15); color: #a5b4fc; }
 .status-approved { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
 .status-rejected { background: rgba(239, 68, 68, 0.15); color: #f87171; }
 .status-pending { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }

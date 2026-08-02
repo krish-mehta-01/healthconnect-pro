@@ -6,20 +6,28 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import StatusBadge from '../components/StatusBadge';
 import {
   Package, AlertTriangle, Plus, X, Send,
-  TrendingDown, CheckCircle
+  TrendingDown, CheckCircle, ShoppingCart
 } from 'lucide-react';
-import { createSupplyRequest, createInventoryItem } from '../services/api';
+import { createSupplyRequest, createInventoryItem, updateFacilityStock } from '../services/api';
+import { canWrite, canCreateSupplyRequest, canUpdateStock, isStateAdmin } from '../utils/permissions';
 
 export default function InventoryPage() {
   const dispatch = useAppDispatch();
   const { masterItems, facilityStock, supplyRequests, loading } = useAppSelector(s => s.inventory);
   const { items: facilities } = useAppSelector(s => s.facilities);
   const { user } = useAppSelector(s => s.auth);
-  const [activeTab, setActiveTab] = useState<'stock' | 'requests' | 'master'>('stock');
+  // Reorder Watch is a Pharmacist/State_Admin planning view — not the officer-review roles,
+  // Facility_Staff, Data_Entry_Clerk, or Auditor.
+  const canSeeReorderWatch = user?.role === 'Pharmacist' || isStateAdmin(user?.role);
+  const canEditStock = canUpdateStock(user?.role) && canWrite(user?.role);
+  const [activeTab, setActiveTab] = useState<'stock' | 'requests' | 'master' | 'reorder'>('stock');
   const [showAddItem, setShowAddItem] = useState(false);
   const [showRequest, setShowRequest] = useState(false);
-  const [newItem, setNewItem] = useState({ Item_Name: '', Category: 'Medical Supplies', Minimum_Threshold: 10 });
+  const [newItem, setNewItem] = useState({ Item_Name: '', Category: 'Consumables', Minimum_Threshold: 10 });
   const [newRequest, setNewRequest] = useState({ Facility_ID: '', Item_ID: '', Quantity_Requested: 0 });
+  const [editingStockId, setEditingStockId] = useState<string | null>(null);
+  const [stockValue, setStockValue] = useState('');
+  const [savingStock, setSavingStock] = useState(false);
 
   useEffect(() => {
     dispatch(fetchInventoryMaster());
@@ -43,12 +51,52 @@ export default function InventoryPage() {
     setShowRequest(false);
   };
 
+  const startEditStock = (id: string, currentStock: number | string) => {
+    setEditingStockId(id);
+    setStockValue(String(currentStock));
+  };
+
+  const handleSaveStock = async (id: string) => {
+    setSavingStock(true);
+    try {
+      await updateFacilityStock(id, Number(stockValue));
+      dispatch(fetchFacilityInventory());
+      setEditingStockId(null);
+    } catch (err) {
+      console.error('Failed to update stock:', err);
+      alert('Failed to update stock. Please try again.');
+    } finally {
+      setSavingStock(false);
+    }
+  };
+
   if (loading && masterItems.length === 0) return <LoadingSpinner message="Loading inventory..." />;
 
   const lowStockItems = facilityStock.filter(fs => {
     const master = masterItems.find(m => m.ROWID === fs.Item_ID);
     return master && Number(fs.Current_Stock) < Number(master.Minimum_Threshold);
   });
+
+  // Reorder Watch — items not yet below threshold (those are already the Low Stock alert
+  // above) but trending toward it: Current_Stock < Minimum_Threshold * 1.5. Sorted ascending
+  // by how close they are to the threshold (smallest margin first = most urgent).
+  const reorderWatchItems = facilityStock
+    .map(fs => {
+      const master = masterItems.find(m => m.ROWID === fs.Item_ID);
+      if (!master) return null;
+      const current = Number(fs.Current_Stock);
+      const threshold = Number(master.Minimum_Threshold);
+      if (!(current >= threshold)) return null; // already below threshold — shown in Low Stock alert instead
+      if (!(current < threshold * 1.5)) return null; // not within reorder watch range
+      const margin = current - threshold;
+      const ratio = threshold > 0 ? margin / threshold : 0;
+      const urgency: 'Reorder soon' | 'Monitor' = ratio <= 0.2 ? 'Reorder soon' : 'Monitor';
+      return { fs, master, current, threshold, margin, urgency };
+    })
+    .filter((x): x is NonNullable<typeof x> => x !== null)
+    .sort((a, b) => a.margin - b.margin);
+
+  const facilityNameById = (id: string) => facilities.find(f => f.ROWID === id)?.Facility_Name || id;
 
   return (
     <div className="page">
@@ -58,10 +106,12 @@ export default function InventoryPage() {
           <p className="page-subtitle">Track medical supplies & manage procurement requests</p>
         </div>
         <div className="header-actions">
-          <button className="btn btn-outline" onClick={() => setShowRequest(true)}>
-            <Send size={18} /> Supply Request
-          </button>
-          {user?.role === 'State_Admin' && (
+          {canCreateSupplyRequest(user?.role) && canWrite(user?.role) && (
+            <button className="btn btn-outline" onClick={() => setShowRequest(true)}>
+              <Send size={18} /> Supply Request
+            </button>
+          )}
+          {isStateAdmin(user?.role) && canWrite(user?.role) && (
             <button className="btn btn-primary" onClick={() => setShowAddItem(true)}>
               <Plus size={18} /> Add Item
             </button>
@@ -88,6 +138,11 @@ export default function InventoryPage() {
         <button className={`tab ${activeTab === 'master' ? 'active' : ''}`} onClick={() => setActiveTab('master')}>
           <CheckCircle size={16} /> Master Items
         </button>
+        {canSeeReorderWatch && (
+          <button className={`tab ${activeTab === 'reorder' ? 'active' : ''}`} onClick={() => setActiveTab('reorder')}>
+            <ShoppingCart size={16} /> Reorder Watch
+          </button>
+        )}
       </div>
 
       {/* Tab Content */}
@@ -103,17 +158,29 @@ export default function InventoryPage() {
                   <th>Threshold</th>
                   <th>Status</th>
                   <th>Last Updated</th>
+                  {canEditStock && <th>Actions</th>}
                 </tr>
               </thead>
               <tbody>
                 {facilityStock.length > 0 ? facilityStock.map(fs => {
                   const master = masterItems.find(m => m.ROWID === fs.Item_ID);
                   const isLow = master && Number(fs.Current_Stock) < Number(master.Minimum_Threshold);
+                  const isEditing = editingStockId === fs.ROWID;
                   return (
                     <tr key={fs.ROWID} className={isLow ? 'row-warning' : ''}>
                       <td>{fs.Facility_ID}</td>
                       <td>{master?.Item_Name || fs.Item_ID}</td>
-                      <td className="td-mono">{fs.Current_Stock}</td>
+                      <td className="td-mono">
+                        {isEditing ? (
+                          <input
+                            type="number"
+                            min={0}
+                            value={stockValue}
+                            onChange={e => setStockValue(e.target.value)}
+                            style={{ width: '80px', padding: '0.35rem', borderRadius: '6px', background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)' }}
+                          />
+                        ) : fs.Current_Stock}
+                      </td>
                       <td className="td-mono">{master?.Minimum_Threshold || '—'}</td>
                       <td>
                         {isLow ? (
@@ -123,10 +190,22 @@ export default function InventoryPage() {
                         )}
                       </td>
                       <td>{fs.Last_Updated || '—'}</td>
+                      {canEditStock && (
+                        <td>
+                          {isEditing ? (
+                            <div style={{ display: 'flex', gap: '0.4rem' }}>
+                              <button className="btn btn-outline" style={{ padding: '0.3rem 0.6rem' }} disabled={savingStock} onClick={() => handleSaveStock(fs.ROWID)}>Save</button>
+                              <button className="btn btn-ghost" style={{ padding: '0.3rem 0.6rem' }} onClick={() => setEditingStockId(null)}>Cancel</button>
+                            </div>
+                          ) : (
+                            <button className="btn btn-outline" style={{ padding: '0.3rem 0.6rem' }} onClick={() => startEditStock(fs.ROWID, fs.Current_Stock)}>Update</button>
+                          )}
+                        </td>
+                      )}
                     </tr>
                   );
                 }) : (
-                  <tr><td colSpan={6} className="empty-state">No inventory data recorded yet.</td></tr>
+                  <tr><td colSpan={canEditStock ? 7 : 6} className="empty-state">No inventory data recorded yet.</td></tr>
                 )}
               </tbody>
             </table>
@@ -194,6 +273,44 @@ export default function InventoryPage() {
         </div>
       )}
 
+      {activeTab === 'reorder' && canSeeReorderWatch && (
+        <div className="card">
+          <div className="card-header">
+            <h3>Reorder Watch</h3>
+          </div>
+          <div className="table-container">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Facility</th>
+                  <th>Item</th>
+                  <th>Current Stock</th>
+                  <th>Threshold</th>
+                  <th>Urgency</th>
+                </tr>
+              </thead>
+              <tbody>
+                {reorderWatchItems.length > 0 ? reorderWatchItems.map(({ fs, master, current, threshold, urgency }) => (
+                  <tr key={fs.ROWID}>
+                    <td>{facilityNameById(fs.Facility_ID)}</td>
+                    <td>{master.Item_Name}</td>
+                    <td className="td-mono">{current}</td>
+                    <td className="td-mono">{threshold}</td>
+                    <td>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontSize: 'var(--text-xs)', fontWeight: 600, color: urgency === 'Reorder soon' ? 'var(--color-warning)' : 'var(--color-info)' }}>
+                        <AlertTriangle size={14} /> {urgency}
+                      </span>
+                    </td>
+                  </tr>
+                )) : (
+                  <tr><td colSpan={5} className="empty-state">No items approaching their reorder threshold.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       {/* Add Item Modal */}
       {showAddItem && (
         <div className="modal-overlay" onClick={() => setShowAddItem(false)}>
@@ -211,8 +328,8 @@ export default function InventoryPage() {
                 <div className="form-group">
                   <label>Category</label>
                   <select value={newItem.Category} onChange={e => setNewItem({ ...newItem, Category: e.target.value })}>
-                    <option>Medical Supplies</option>
-                    <option>Pharmaceuticals</option>
+                    <option>Consumables</option>
+                    <option>Medicines</option>
                     <option>Equipment</option>
                     <option>PPE</option>
                     <option>Laboratory</option>

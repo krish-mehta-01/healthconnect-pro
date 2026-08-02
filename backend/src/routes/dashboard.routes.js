@@ -1,19 +1,29 @@
 'use strict';
 
 const express = require('express');
-const { zcql, flatten, TABLES } = require('../lib/catalyst');
+const { zcql, flatten, q, getScopedFacilityIds, TABLES } = require('../lib/catalyst');
 const { ok, fail } = require('../lib/response');
 
 const router = express.Router();
 
 router.get('/', async (req, res) => {
   try {
-    const [facilities, reports, facilityInventory, inventoryMaster, urgentFeedback] = await Promise.all([
-      flatten(await zcql(req, `SELECT * FROM ${TABLES.FACILITIES}`), TABLES.FACILITIES),
-      flatten(await zcql(req, `SELECT * FROM ${TABLES.HEALTH_REPORTS} ORDER BY CREATEDTIME DESC`), TABLES.HEALTH_REPORTS),
-      flatten(await zcql(req, `SELECT * FROM ${TABLES.FACILITY_INVENTORY}`), TABLES.FACILITY_INVENTORY),
+    const scopedIds = await getScopedFacilityIds(req);
+    const facilitiesWhere = scopedIds === null
+      ? ''
+      : scopedIds.length ? ` WHERE ROWID IN (${scopedIds.map(q).join(',')})` : ' WHERE ROWID = -1';
+    const facilityScopeWhere = scopedIds === null
+      ? ''
+      : scopedIds.length ? ` WHERE Facility_ID IN (${scopedIds.map(q).join(',')})` : ' WHERE ROWID = -1';
+
+    const [facilities, reports, facilityInventory, inventoryMaster, urgentFeedback, patients, supplyRequests] = await Promise.all([
+      flatten(await zcql(req, `SELECT * FROM ${TABLES.FACILITIES}${facilitiesWhere}`), TABLES.FACILITIES),
+      flatten(await zcql(req, `SELECT * FROM ${TABLES.HEALTH_REPORTS}${facilityScopeWhere} ORDER BY CREATEDTIME DESC`), TABLES.HEALTH_REPORTS),
+      flatten(await zcql(req, `SELECT * FROM ${TABLES.FACILITY_INVENTORY}${facilityScopeWhere}`), TABLES.FACILITY_INVENTORY),
       flatten(await zcql(req, `SELECT * FROM ${TABLES.INVENTORY_MASTER}`), TABLES.INVENTORY_MASTER),
       flatten(await zcql(req, `SELECT * FROM ${TABLES.SENTIMENT_TRIAGE} WHERE Urgency_Flag = true ORDER BY CREATEDTIME DESC LIMIT 10`), TABLES.SENTIMENT_TRIAGE),
+      flatten(await zcql(req, `SELECT ROWID FROM ${TABLES.PATIENTS}${facilityScopeWhere}`), TABLES.PATIENTS),
+      flatten(await zcql(req, `SELECT * FROM ${TABLES.SUPPLY_REQUESTS}${facilityScopeWhere}`), TABLES.SUPPLY_REQUESTS),
     ]);
 
     const thresholdByItem = new Map(inventoryMaster.map((m) => [m.ROWID, Number(m.Minimum_Threshold)]));
@@ -49,6 +59,9 @@ router.get('/', async (req, res) => {
       lowStockAlerts,
       urgentFeedback,
       facilityPerformance,
+      totalPatients: patients.length,
+      pendingSupplyRequests: supplyRequests.filter((r) => r.Status === 'Pending').length,
+      totalInventoryItems: facilityInventory.length,
     });
   } catch (err) {
     return fail(res, 500, err.message);

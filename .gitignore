@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.build/
+*.log
+*_cookies.txt
+.env
+.env.local
+.DS_Store
+backend/app-config.json

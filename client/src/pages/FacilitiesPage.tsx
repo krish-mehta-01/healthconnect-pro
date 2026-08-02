@@ -4,6 +4,7 @@ import { fetchFacilities, addFacility, removeFacility } from '../store/facilitie
 import LoadingSpinner from '../components/LoadingSpinner';
 import { Building2, Plus, Trash2, MapPin, Users, X } from 'lucide-react';
 import type { Facility } from '../types';
+import { canWrite } from '../utils/permissions';
 
 export default function FacilitiesPage() {
   const dispatch = useAppDispatch();
@@ -31,7 +32,7 @@ export default function FacilitiesPage() {
     }
   };
 
-  const isAdmin = user?.role === 'State_Admin';
+  const isAdmin = user?.role === 'State_Admin' && canWrite(user?.role);
 
   if (loading && items.length === 0) return <LoadingSpinner message="Loading facilities..." />;
 
@@ -51,7 +52,7 @@ export default function FacilitiesPage() {
 
       {/* Stats Summary */}
       <div className="facilities-stats">
-        {['PHC', 'CHC', 'Sub_Center', 'District_Hospital'].map(type => {
+        {['HWC', 'Sub_Center', 'PHC', 'CHC', 'Sub_District_Hospital', 'District_Hospital'].map(type => {
           const count = items.filter(f => f.Type === type).length;
           return (
             <div key={type} className="facility-stat-chip">
@@ -120,9 +121,11 @@ export default function FacilitiesPage() {
                 <div className="form-group">
                   <label>Type</label>
                   <select value={form.Type} onChange={e => setForm({ ...form, Type: e.target.value as Facility['Type'] })}>
+                    <option value="HWC">Health & Wellness Centre</option>
+                    <option value="Sub_Center">Sub Centre</option>
                     <option value="PHC">Primary Health Centre</option>
                     <option value="CHC">Community Health Centre</option>
-                    <option value="Sub_Center">Sub Centre</option>
+                    <option value="Sub_District_Hospital">Sub-District Hospital</option>
                     <option value="District_Hospital">District Hospital</option>
                     <option value="State_Hospital">State Hospital</option>
                   </select>

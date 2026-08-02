@@ -16,7 +16,7 @@ async function analyzeSentiment(text) {
     return heuristicSentiment(text);
   }
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' });
     const prompt = `Analyze the sentiment of this patient feedback about a health facility. ` +
       `Respond with ONLY a compact JSON object like {"score": -0.8, "urgency": "High"} — ` +
       `score is a number from -1 (very negative) to 1 (very positive), ` +
@@ -46,7 +46,7 @@ function heuristicSentiment(text) {
 async function extractFromImage(imageBase64, mimeType) {
   const genAI = getClient();
   if (!genAI) throw new Error('OCR is unavailable: GEMINI_API_KEY is not configured on the server');
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' });
   const cleaned = imageBase64.includes(',') ? imageBase64.split(',').pop() : imageBase64;
   const result = await model.generateContent([
     { inlineData: { data: cleaned, mimeType: mimeType || 'image/jpeg' } },
@@ -55,4 +55,19 @@ async function extractFromImage(imageBase64, mimeType) {
   return { text: result.response.text() };
 }
 
-module.exports = { analyzeSentiment, extractFromImage };
+// history: [{ role: 'user' | 'model', text: string }]. Returns the assistant's reply text.
+async function chat(message, history) {
+  const genAI = getClient();
+  if (!genAI) throw new Error('AI assistant is unavailable: GEMINI_API_KEY is not configured on the server');
+  const model = genAI.getGenerativeModel({
+    model: 'gemini-flash-latest',
+    systemInstruction: 'You are an AI assistant built into HealthConnect Pro, an Enterprise Health Management Information System for Shimla, Himachal Pradesh. Help the user navigate the platform and provide brief, professional healthcare answers.',
+  });
+  const chatSession = model.startChat({
+    history: (history || []).map((h) => ({ role: h.role, parts: [{ text: h.text }] })),
+  });
+  const result = await chatSession.sendMessage(message);
+  return result.response.text();
+}
+
+module.exports = { analyzeSentiment, extractFromImage, chat };

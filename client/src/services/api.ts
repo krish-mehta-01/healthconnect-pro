@@ -8,6 +8,7 @@ import type {
   Indicator, FeedbackLog, SentimentTriage, SupplyRequest,
   FacilityInventory, InventoryMaster, Department,
   ReportingCycle, CurrentUser, User, Patient,
+  WorkflowHistoryEntry, OverdueFacility,
 } from '../types';
 
 const BASE = import.meta.env.VITE_API_BASE_URL || '/server/healthconnect_api/api';
@@ -76,8 +77,12 @@ export const approveReport = (data: { report_id: string; status: string; notes?:
   request<HealthReport>('/reports/approve', { method: 'PUT', body: JSON.stringify(data) });
 export const approveReportById = (id: string, data: { status: string; comments?: string }) =>
   request<HealthReport>(`/reports/${id}/approve`, { method: 'POST', body: JSON.stringify(data) });
+export const endorseReport = (id: string, comments?: string) =>
+  request<HealthReport>(`/reports/${id}/endorse`, { method: 'POST', body: JSON.stringify({ comments }) });
 export const updateReportData = (id: string, indicators: { ROWID?: string; indicator_id: string; value: string; notes?: string }[]) =>
   request<unknown>(`/reports/${id}/data`, { method: 'PUT', body: JSON.stringify({ indicators }) });
+export const getActivityLog = () => request<WorkflowHistoryEntry[]>('/reports/activity-log');
+export const getOverdueReports = () => request<OverdueFacility[]>('/reports/overdue');
 
 // ── Inventory ──
 export const getInventoryMaster = () => request<InventoryMaster[]>('/inventory/master');
@@ -109,10 +114,16 @@ export const getPatients = (facilityId?: string) =>
   request<Patient[]>(`/patients${facilityId ? `?facility_id=${facilityId}` : ''}`);
 export const createPatient = (data: Partial<Patient>) =>
   request<Patient>('/patients', { method: 'POST', body: JSON.stringify(data) });
+export const updatePatient = (id: string, data: Partial<Patient>) =>
+  request<Patient>(`/patients/${id}`, { method: 'PUT', body: JSON.stringify(data) });
 
 // ── Dashboard ──
 export const getDashboard = () => request<DashboardStats>('/dashboard');
 
 // ── OCR ──
-export const extractOCR = (imageBase64: string) =>
-  request<unknown>('/ocr/extract', { method: 'POST', body: JSON.stringify({ image_base64: imageBase64 }) });
+export const extractOCR = (imageBase64: string, mimeType?: string) =>
+  request<{ text: string }>('/ocr/extract', { method: 'POST', body: JSON.stringify({ image_base64: imageBase64, mime_type: mimeType }) });
+
+// ── AI Chat ──
+export const chatWithAI = (message: string, history: { role: 'user' | 'model'; text: string }[]) =>
+  request<{ reply: string }>('/chat', { method: 'POST', body: JSON.stringify({ message, history }) });

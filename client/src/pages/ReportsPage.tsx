@@ -8,12 +8,15 @@ import StatusBadge from '../components/StatusBadge';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { FileText, Plus, Search, X, Eye } from 'lucide-react';
 import type { Indicator } from '../types';
+import { canWrite } from '../utils/permissions';
 
 export default function ReportsPage() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { items, loading } = useAppSelector(s => s.reports);
   const { items: facilities } = useAppSelector(s => s.facilities);
+  const { user } = useAppSelector(s => s.auth);
+  const canCreateReport = ['Facility_Staff', 'Data_Entry_Clerk'].includes(user?.role || '') && canWrite(user?.role);
 
   const [indicators, setIndicators] = useState<Indicator[]>([]);
   const [showCreate, setShowCreate] = useState(false);
@@ -61,9 +64,11 @@ export default function ReportsPage() {
           <h1 className="page-title">Health Reports</h1>
           <p className="page-subtitle">Monthly facility reporting & approval workflow</p>
         </div>
-        <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
-          <Plus size={18} /> New Report
-        </button>
+        {canCreateReport && (
+          <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
+            <Plus size={18} /> New Report
+          </button>
+        )}
       </div>
 
       {/* Filters */}
@@ -82,7 +87,7 @@ export default function ReportsPage() {
             className={`filter-chip ${filterStatus === '' ? 'active' : ''}`}
             onClick={() => setFilterStatus('')}
           >All</button>
-          {['Draft', 'Submitted', 'Approved', 'Rejected'].map(s => (
+          {['Draft', 'Submitted', 'Endorsed', 'Approved', 'Rejected'].map(s => (
             <button
               key={s}
               className={`filter-chip ${filterStatus === s ? 'active' : ''}`}

@@ -2,8 +2,11 @@ import { useState, useEffect } from 'react';
 import { getSupplyRequests, getFacilityInventory, transferInventory, getInventoryMaster, getFacilities } from '../services/api';
 import { PackageOpen, ArrowRightLeft, CheckCircle, X, AlertTriangle } from 'lucide-react';
 import LoadingSpinner from './LoadingSpinner';
+import { useAppSelector } from '../store/hooks';
+import { canWrite } from '../utils/permissions';
 
 export default function ResourceTransferModal() {
+  const { user } = useAppSelector(s => s.auth);
   const [requests, setRequests] = useState<any[]>([]);
   const [inventoryMaster, setInventoryMaster] = useState<any[]>([]);
   const [facilities, setFacilities] = useState<any[]>([]);
@@ -106,9 +109,11 @@ export default function ResourceTransferModal() {
                     <div style={{ fontWeight: 600 }}>{fac?.Facility_Name} requests {req.Quantity_Requested} {item?.Item_Name}</div>
                     <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>Request ID: #{req.ROWID}</div>
                   </div>
-                  <button className="btn btn-primary" onClick={() => openReRouteModal(req)} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                    <ArrowRightLeft size={16} /> Smart Re-Route
-                  </button>
+                  {canWrite(user?.role) && (
+                    <button className="btn btn-primary" onClick={() => openReRouteModal(req)} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                      <ArrowRightLeft size={16} /> Smart Re-Route
+                    </button>
+                  )}
                 </div>
               );
             })}
@@ -147,13 +152,15 @@ export default function ResourceTransferModal() {
                             <div style={{ fontWeight: 600 }}>{opt.facility_name}</div>
                             <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>Current Stock: {opt.stock}</div>
                           </div>
-                          <button 
-                            className="btn btn-outline" 
-                            onClick={() => handleTransfer(opt.facility_id)}
-                            disabled={transferring}
-                          >
-                            {transferring ? 'Routing...' : 'Approve Transfer'}
-                          </button>
+                          {canWrite(user?.role) && (
+                            <button
+                              className="btn btn-outline"
+                              onClick={() => handleTransfer(opt.facility_id)}
+                              disabled={transferring}
+                            >
+                              {transferring ? 'Routing...' : 'Approve Transfer'}
+                            </button>
+                          )}
                         </div>
                       ))}
                     </div>

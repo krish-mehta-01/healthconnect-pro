@@ -10,11 +10,14 @@ import {
 } from 'lucide-react';
 import { submitFeedback, getPatients } from '../services/api';
 import type { Patient } from '../types';
+import { canWrite, canLogFeedback as canLogFeedbackRole } from '../utils/permissions';
 
 export default function FeedbackPage() {
   const dispatch = useAppDispatch();
   const { items, triageAlerts, loading } = useAppSelector(s => s.feedback);
   const { items: facilities } = useAppSelector(s => s.facilities);
+  const { user } = useAppSelector(s => s.auth);
+  const canLogFeedback = canLogFeedbackRole(user?.role) && canWrite(user?.role);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [activeTab, setActiveTab] = useState<'feedback' | 'triage'>('feedback');
@@ -70,9 +73,11 @@ export default function FeedbackPage() {
             <Brain size={16} /> Zia-powered sentiment analysis for feedback prioritization
           </p>
         </div>
-        <button className="btn btn-primary" onClick={() => setShowForm(true)}>
-          <Plus size={18} /> Log Feedback
-        </button>
+        {canLogFeedback && (
+          <button className="btn btn-primary" onClick={() => setShowForm(true)}>
+            <Plus size={18} /> Log Feedback
+          </button>
+        )}
       </div>
 
       {/* Urgent Alert */}

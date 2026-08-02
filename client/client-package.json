@@ -1,6 +1,7 @@
 {
     "name": "healthconnect-client",
-    "homepage": "./",
+    "version": "1.0.0",
+    "homepage": "/",
     "build": {
         "command": "npm run build",
         "output": "dist"

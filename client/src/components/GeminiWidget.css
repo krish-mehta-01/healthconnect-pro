@@ -52,7 +52,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 1rem;
-  background: rgba(15, 23, 42, 0.95);
+  background: var(--color-bg-secondary);
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -61,7 +61,7 @@
   align-items: center;
   gap: 0.5rem;
   font-weight: 600;
-  color: white;
+  color: var(--color-text-heading);
 }
 
 .gemini-header-title svg {
@@ -71,7 +71,7 @@
 .gemini-header-actions button {
   background: none;
   border: none;
-  color: #94a3b8;
+  color: var(--color-text-muted);
   cursor: pointer;
   padding: 4px;
   margin-left: 8px;
@@ -79,8 +79,8 @@
 }
 
 .gemini-header-actions button:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
+  background: var(--color-bg-elevated);
+  color: var(--color-text-primary);
 }
 
 .gemini-messages {

@@ -1,18 +1,24 @@
 'use strict';
 
 const express = require('express');
-const { table, zcql, flatten, q, catalystDateTime, TABLES } = require('../lib/catalyst');
+const { table, zcql, flatten, q, catalystDateTime, getScopedFacilityIds, TABLES } = require('../lib/catalyst');
 const { ok, fail } = require('../lib/response');
 const { analyzeSentiment } = require('../lib/gemini');
+const { requireRole } = require('../middleware/auth');
 
 const router = express.Router();
 
 router.get('/', async (req, res) => {
   try {
     const { facility_id } = req.query;
-    const query = facility_id
-      ? `SELECT * FROM ${TABLES.FEEDBACK_LOGS} WHERE Facility_ID = ${q(facility_id)} ORDER BY CREATEDTIME DESC`
-      : `SELECT * FROM ${TABLES.FEEDBACK_LOGS} ORDER BY CREATEDTIME DESC`;
+    const clauses = [];
+    if (facility_id) clauses.push(`Facility_ID = ${q(facility_id)}`);
+    const scopedIds = await getScopedFacilityIds(req);
+    if (scopedIds !== null) {
+      clauses.push(scopedIds.length ? `Facility_ID IN (${scopedIds.map(q).join(',')})` : 'ROWID = -1');
+    }
+    const where = clauses.length ? ` WHERE ${clauses.join(' AND ')}` : '';
+    const query = `SELECT * FROM ${TABLES.FEEDBACK_LOGS}${where} ORDER BY CREATEDTIME DESC`;
     const rows = flatten(await zcql(req, query), TABLES.FEEDBACK_LOGS);
     return ok(res, rows);
   } catch (err) {
@@ -20,7 +26,10 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.post('/', async (req, res) => {
+// Facility_Staff, ASHA_Worker and Staff_Nurse log patient feedback — every other role
+// (including officers and State_Admin) is a review/oversight role for feedback, not a
+// source of it.
+router.post('/', requireRole('Facility_Staff', 'ASHA_Worker', 'Staff_Nurse'), async (req, res) => {
   try {
     const { Facility_ID, Patient_ID, Feedback_Text } = req.body || {};
     if (!Facility_ID || !Patient_ID || !Feedback_Text) {

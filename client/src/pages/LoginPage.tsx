@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { fetchCurrentUser, setUser, loginUser, registerUser } from '../store/authSlice';
 import { useTheme } from '../context/ThemeContext';
-import { getFacilities } from '../services/api';
-import type { Facility } from '../types';
 import { Heart, Shield, Activity, BarChart3, Moon, Sun } from 'lucide-react';
 import './LoginPage.css';
 
@@ -22,20 +20,10 @@ export default function LoginPage() {
   const [name, setName] = useState('');
   const [role, setRole] = useState('Facility_Staff');
   const [facilityId, setFacilityId] = useState('');
-  const [facilities, setFacilities] = useState<Facility[]>([]);
 
   useEffect(() => {
     if (isAuthenticated) navigate('/', { replace: true });
   }, [isAuthenticated, navigate]);
-
-  useEffect(() => {
-    getFacilities()
-      .then((data) => {
-        setFacilities(data);
-        if (data.length > 0) setFacilityId(data[0].ROWID);
-      })
-      .catch((err) => console.error('Failed to load facilities:', err));
-  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -173,26 +161,46 @@ export default function LoginPage() {
                     value={role}
                     onChange={(e) => setRole(e.target.value)}
                   >
-                    <option value="Facility_Staff">Facility Staff</option>
-                    <option value="Block_Officer">Block Officer</option>
-                    <option value="District_Officer">District Officer</option>
-                    <option value="State_Admin">State Admin</option>
+                    <optgroup label="Facility Leadership">
+                      <option value="Facility_Head">Facility Head</option>
+                      <option value="Facility_Supervisor">Facility Supervisor</option>
+                    </optgroup>
+                    <optgroup label="Clinical Staff">
+                      <option value="Doctor">Doctor</option>
+                      <option value="Staff_Nurse">Staff Nurse</option>
+                    </optgroup>
+                    <optgroup label="Community Health">
+                      <option value="ASHA_Worker">ASHA Worker</option>
+                      <option value="ANM">ANM (Auxiliary Nurse Midwife)</option>
+                    </optgroup>
+                    <optgroup label="Front Desk & Admin Support">
+                      <option value="Registration_Clerk">Registration Clerk</option>
+                      <option value="Facility_Staff">Facility Staff</option>
+                      <option value="Data_Entry_Clerk">Data Entry Clerk</option>
+                    </optgroup>
+                    <optgroup label="Inventory">
+                      <option value="Pharmacist">Pharmacist</option>
+                      <option value="Store_Keeper">Store Keeper</option>
+                    </optgroup>
+                    <optgroup label="Administration">
+                      <option value="Block_Officer">Block Officer</option>
+                      <option value="District_Officer">District Officer</option>
+                      <option value="State_Admin">State Admin</option>
+                      <option value="Auditor">Auditor</option>
+                    </optgroup>
                   </select>
                 </div>
 
                 <div className="auth-input-group">
                   <label>Facility Code / ID</label>
-                  <select
-                    className="auth-select"
+                  <input
+                    type="text"
+                    className="auth-input"
+                    placeholder="e.g. 59526000000027011"
                     value={facilityId}
                     onChange={(e) => setFacilityId(e.target.value)}
                     required
-                  >
-                    <option value="">Select facility...</option>
-                    {facilities.map((f) => (
-                      <option key={f.ROWID} value={f.ROWID}>{f.Facility_Name}</option>
-                    ))}
-                  </select>
+                  />
                 </div>
               </>
             )}

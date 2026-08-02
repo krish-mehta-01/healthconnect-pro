@@ -1,7 +1,7 @@
 'use strict';
 
 const express = require('express');
-const { table, zcql, flatten, q, sanitizeInsert, catalystDateTime, TABLES } = require('../lib/catalyst');
+const { table, zcql, flatten, q, sanitizeInsert, catalystDateTime, getScopedFacilityIds, TABLES } = require('../lib/catalyst');
 const { ok, fail } = require('../lib/response');
 const { requireRole } = require('../middleware/auth');
 
@@ -25,22 +25,54 @@ router.post('/master', requireRole('State_Admin'), async (req, res) => {
   }
 });
 
+// Store_Keeper's category scope — everything except Medicines, which stays exclusively
+// Pharmacist's domain (see the role hierarchy table). Live Inventory_Master data uses
+// "Medicines" as the pharmaceutical category (confirmed against the seeded rows), not
+// "Pharmaceuticals" — matching the real category string here, not a guessed label, is
+// load-bearing for this gate to actually restrict anything.
+const PHARMA_CATEGORY = 'Medicines';
+
 router.get('/facility', async (req, res) => {
   try {
     const { facility_id } = req.query;
-    const query = facility_id
-      ? `SELECT * FROM ${TABLES.FACILITY_INVENTORY} WHERE Facility_ID = ${q(facility_id)}`
-      : `SELECT * FROM ${TABLES.FACILITY_INVENTORY}`;
-    const rows = flatten(await zcql(req, query), TABLES.FACILITY_INVENTORY);
+    const clauses = [];
+    if (facility_id) clauses.push(`Facility_ID = ${q(facility_id)}`);
+    const scopedIds = await getScopedFacilityIds(req);
+    if (scopedIds !== null) {
+      clauses.push(scopedIds.length ? `Facility_ID IN (${scopedIds.map(q).join(',')})` : 'ROWID = -1');
+    }
+    const where = clauses.length ? ` WHERE ${clauses.join(' AND ')}` : '';
+    const query = `SELECT * FROM ${TABLES.FACILITY_INVENTORY}${where}`;
+    let rows = flatten(await zcql(req, query), TABLES.FACILITY_INVENTORY);
+
+    if (req.user.role === 'Store_Keeper') {
+      const masterRows = flatten(await zcql(req, `SELECT * FROM ${TABLES.INVENTORY_MASTER}`), TABLES.INVENTORY_MASTER);
+      const categoryByItem = new Map(masterRows.map((m) => [m.ROWID, m.Category]));
+      rows = rows.filter((r) => categoryByItem.get(r.Item_ID) !== PHARMA_CATEGORY);
+    }
+
     return ok(res, rows);
   } catch (err) {
     return fail(res, 500, err.message);
   }
 });
 
-router.put('/facility/:id', async (req, res) => {
+// Stock-level updates are an operational inventory action, not exposed to Data_Entry_Clerk
+// (who has no inventory access at all per the permission matrix) or to Auditor (blocked
+// globally from writes already). Store_Keeper is additionally restricted below to
+// non-pharmaceutical items only.
+router.put('/facility/:id', requireRole('State_Admin', 'District_Officer', 'Block_Officer', 'Facility_Staff', 'Pharmacist', 'Store_Keeper'), async (req, res) => {
   try {
     const { Current_Stock } = req.body || {};
+
+    if (req.user.role === 'Store_Keeper') {
+      const existing = await table(req, TABLES.FACILITY_INVENTORY).getRow(req.params.id);
+      const master = await table(req, TABLES.INVENTORY_MASTER).getRow(existing.Item_ID);
+      if (master.Category === PHARMA_CATEGORY) {
+        return fail(res, 403, 'Store_Keeper cannot manage pharmaceutical stock');
+      }
+    }
+
     const updated = await table(req, TABLES.FACILITY_INVENTORY).updateRow({
       ROWID: req.params.id, Current_Stock: Current_Stock, Last_Updated: catalystDateTime(),
     });
@@ -64,9 +96,14 @@ router.put('/facility/:id', async (req, res) => {
 router.get('/requests', async (req, res) => {
   try {
     const { facility_id } = req.query;
-    const query = facility_id
-      ? `SELECT * FROM ${TABLES.SUPPLY_REQUESTS} WHERE Facility_ID = ${q(facility_id)} ORDER BY CREATEDTIME DESC`
-      : `SELECT * FROM ${TABLES.SUPPLY_REQUESTS} ORDER BY CREATEDTIME DESC`;
+    const clauses = [];
+    if (facility_id) clauses.push(`Facility_ID = ${q(facility_id)}`);
+    const scopedIds = await getScopedFacilityIds(req);
+    if (scopedIds !== null) {
+      clauses.push(scopedIds.length ? `Facility_ID IN (${scopedIds.map(q).join(',')})` : 'ROWID = -1');
+    }
+    const where = clauses.length ? ` WHERE ${clauses.join(' AND ')}` : '';
+    const query = `SELECT * FROM ${TABLES.SUPPLY_REQUESTS}${where} ORDER BY CREATEDTIME DESC`;
     const rows = flatten(await zcql(req, query), TABLES.SUPPLY_REQUESTS);
     return ok(res, rows);
   } catch (err) {
@@ -74,8 +111,17 @@ router.get('/requests', async (req, res) => {
   }
 });
 
-router.post('/requests', async (req, res) => {
+// Facility_Staff and Pharmacist raise general supply requests; ANM covers basic
+// sub-center stock; Store_Keeper covers non-pharmaceutical facility stock (checked below).
+router.post('/requests', requireRole('Facility_Staff', 'Pharmacist', 'ANM', 'Store_Keeper'), async (req, res) => {
   try {
+    if (req.user.role === 'Store_Keeper' && req.body?.Item_ID) {
+      const master = await table(req, TABLES.INVENTORY_MASTER).getRow(req.body.Item_ID);
+      if (master.Category === PHARMA_CATEGORY) {
+        return fail(res, 403, 'Store_Keeper cannot request pharmaceutical stock');
+      }
+    }
+
     const inserted = await table(req, TABLES.SUPPLY_REQUESTS).insertRow({
       ...sanitizeInsert(req.body),
       Status: 'Pending',
@@ -86,7 +132,8 @@ router.post('/requests', async (req, res) => {
   }
 });
 
-router.post('/re-route', async (req, res) => {
+// Re-routing resources between facilities is an officer/admin coordination action.
+router.post('/re-route', requireRole('State_Admin', 'District_Officer', 'Block_Officer'), async (req, res) => {
   try {
     const { origin_facility_id, destination_facility_id, item_id, quantity, request_id } = req.body || {};
     if (!origin_facility_id || !destination_facility_id || !item_id || !quantity) {

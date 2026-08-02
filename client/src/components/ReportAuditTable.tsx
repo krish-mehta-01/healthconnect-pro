@@ -3,8 +3,11 @@ import { getReports, getFacilities, getCycles, approveReportById, getReport } fr
 import { ClipboardCheck, Eye, Check, X, History, Activity } from 'lucide-react';
 import LoadingSpinner from './LoadingSpinner';
 import StatusBadge from './StatusBadge';
+import { useAppSelector } from '../store/hooks';
+import { canWrite } from '../utils/permissions';
 
 export default function ReportAuditTable() {
+  const { user } = useAppSelector(s => s.auth);
   const [reports, setReports] = useState<any[]>([]);
   const [facilities, setFacilities] = useState<any[]>([]);
   const [cycles, setCycles] = useState<any[]>([]);
@@ -24,12 +27,17 @@ export default function ReportAuditTable() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [reps, facs, cycs] = await Promise.all([
+      // Officers' approval queue must include both Submitted (facility has no Facility_Head
+      // yet — direct approval fallback) and Endorsed (Facility_Head already signed off) —
+      // the backend's hard gate is what actually decides whether an action succeeds, but a
+      // Submitted-only query here would make Endorsed reports invisible to officers entirely.
+      const [submitted, endorsed, facs, cycs] = await Promise.all([
         getReports({ status: 'Submitted' }),
+        getReports({ status: 'Endorsed' }),
         getFacilities(),
         getCycles()
       ]);
-      setReports(reps);
+      setReports([...submitted, ...endorsed]);
       setFacilities(facs);
       setCycles(cycs);
     } catch (err) {
@@ -90,6 +98,7 @@ export default function ReportAuditTable() {
                 <th>Report ID</th>
                 <th>Facility</th>
                 <th>Cycle</th>
+                <th>Status</th>
                 <th>Submitted On</th>
                 <th>Action</th>
               </tr>
@@ -103,6 +112,7 @@ export default function ReportAuditTable() {
                     <td className="td-mono">#{report.ROWID}</td>
                     <td className="td-value">{fac?.Facility_Name || 'Unknown'}</td>
                     <td>{cyc?.Cycle_Name || 'Unknown'}</td>
+                    <td><StatusBadge status={report.Status} size="sm" /></td>
                     <td>{report.CREATEDTIME ? new Date(report.CREATEDTIME).toLocaleDateString() : 'Recent'}</td>
                     <td>
                       <button className="btn btn-primary" onClick={() => openAuditModal(report)} style={{ padding: '0.4rem 0.75rem', fontSize: '0.85rem', display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
@@ -159,7 +169,7 @@ export default function ReportAuditTable() {
                           {reportDetails.indicators.map((ind: any) => (
                             <tr key={ind.ROWID}>
                               <td className="td-mono">{ind.Indicator_ID}</td>
-                              <td className="td-value" style={{ fontSize: '1.1rem' }}>{ind.Value || ind.Metric_Value}</td>
+                              <td className="td-value" style={{ fontSize: '1.1rem' }}>{ind.Metric_Value}</td>
                               <td style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>{ind.Notes || '—'}</td>
                             </tr>
                           ))}
@@ -178,7 +188,7 @@ export default function ReportAuditTable() {
                         <div key={h.ROWID || i} style={{ position: 'relative' }}>
                           <div style={{ position: 'absolute', left: '-1.85rem', top: '0.2rem', width: '12px', height: '12px', borderRadius: '50%', background: 'var(--color-primary)', border: '2px solid var(--color-bg-card)' }} />
                           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
-                            <strong style={{ fontSize: '0.95rem' }}>{h.Status_Change || h.Action}</strong>
+                            <strong style={{ fontSize: '0.95rem' }}>{h.Status_Change}</strong>
                             <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>{h.Action_Timestamp || h.CREATEDTIME ? new Date(h.Action_Timestamp || h.CREATEDTIME).toLocaleString() : ''}</span>
                           </div>
                           <div style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)' }}>
@@ -189,33 +199,35 @@ export default function ReportAuditTable() {
                     </div>
                   </div>
 
-                  {/* Approval Actions */}
-                  <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <textarea 
-                      placeholder="Add official comments (optional)..."
-                      value={comments}
-                      onChange={(e) => setComments(e.target.value)}
-                      style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg-primary)', color: 'var(--color-text-primary)', minHeight: '80px', resize: 'vertical' }}
-                    />
-                    <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-                      <button 
-                        className="btn btn-outline" 
-                        onClick={() => handleAction('Rejected')} 
-                        disabled={actionLoading}
-                        style={{ color: '#ef4444', borderColor: '#ef4444', display: 'flex', gap: '0.5rem', alignItems: 'center' }}
-                      >
-                        <X size={16} /> Reject Report
-                      </button>
-                      <button 
-                        className="btn btn-primary" 
-                        onClick={() => handleAction('Approved')} 
-                        disabled={actionLoading}
-                        style={{ background: '#22c55e', borderColor: '#22c55e', display: 'flex', gap: '0.5rem', alignItems: 'center' }}
-                      >
-                        <Check size={16} /> Approve Report
-                      </button>
+                  {/* Approval Actions — read-only roles (Auditor) can view the audit trail above but never act on it */}
+                  {canWrite(user?.role) && (
+                    <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      <textarea
+                        placeholder="Add official comments (optional)..."
+                        value={comments}
+                        onChange={(e) => setComments(e.target.value)}
+                        style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg-primary)', color: 'var(--color-text-primary)', minHeight: '80px', resize: 'vertical' }}
+                      />
+                      <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                        <button
+                          className="btn btn-outline"
+                          onClick={() => handleAction('Rejected')}
+                          disabled={actionLoading}
+                          style={{ color: '#ef4444', borderColor: '#ef4444', display: 'flex', gap: '0.5rem', alignItems: 'center' }}
+                        >
+                          <X size={16} /> Reject Report
+                        </button>
+                        <button
+                          className="btn btn-primary"
+                          onClick={() => handleAction('Approved')}
+                          disabled={actionLoading}
+                          style={{ background: '#22c55e', borderColor: '#22c55e', display: 'flex', gap: '0.5rem', alignItems: 'center' }}
+                        >
+                          <Check size={16} /> Approve Report
+                        </button>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                 </div>
               ) : (

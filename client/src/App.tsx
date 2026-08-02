@@ -13,6 +13,8 @@ import ReportsPage from './pages/ReportsPage';
 import ReportDetailPage from './pages/ReportDetailPage';
 import InventoryPage from './pages/InventoryPage';
 import FeedbackPage from './pages/FeedbackPage';
+import PatientsPage from './pages/PatientsPage';
+import AdminPage from './pages/AdminPage';
 import './App.css';
 
 function AppLayout() {
@@ -38,6 +40,8 @@ function AppLayout() {
           <Route path="/reports/:id" element={<ProtectedRoute><ReportDetailPage /></ProtectedRoute>} />
           <Route path="/inventory" element={<ProtectedRoute><InventoryPage /></ProtectedRoute>} />
           <Route path="/feedback" element={<ProtectedRoute><FeedbackPage /></ProtectedRoute>} />
+          <Route path="/patients" element={<ProtectedRoute><PatientsPage /></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute requiredRoles={['State_Admin', 'Auditor']}><AdminPage /></ProtectedRoute>} />
           <Route path="/login" element={<Navigate to="/" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

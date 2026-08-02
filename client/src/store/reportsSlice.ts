@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { HealthReport } from '../types';
-import { getReports, getReport, submitNewReport, submitReportForApproval, approveReport } from '../services/api';
+import { getReports, getReport, submitNewReport, submitReportForApproval, approveReport, endorseReport as endorseReportApi } from '../services/api';
 
 interface ReportsState {
   items: HealthReport[];
@@ -42,6 +42,12 @@ export const reviewReport = createAsyncThunk('reports/review',
   }
 );
 
+export const endorseReport = createAsyncThunk('reports/endorse',
+  async (data: { report_id: string; comments?: string }) => {
+    return await endorseReportApi(data.report_id, data.comments);
+  }
+);
+
 const reportsSlice = createSlice({
   name: 'reports',
   initialState,
@@ -63,6 +69,11 @@ const reportsSlice = createSlice({
         if (state.current?.ROWID === action.payload.ROWID) state.current = { ...state.current, ...action.payload };
       })
       .addCase(reviewReport.fulfilled, (state, action) => {
+        const idx = state.items.findIndex(r => r.ROWID === action.payload.ROWID);
+        if (idx >= 0) state.items[idx] = action.payload;
+        if (state.current?.ROWID === action.payload.ROWID) state.current = { ...state.current, ...action.payload };
+      })
+      .addCase(endorseReport.fulfilled, (state, action) => {
         const idx = state.items.findIndex(r => r.ROWID === action.payload.ROWID);
         if (idx >= 0) state.items[idx] = action.payload;
         if (state.current?.ROWID === action.payload.ROWID) state.current = { ...state.current, ...action.payload };

@@ -2,8 +2,11 @@ import { useState, useEffect } from 'react';
 import { getEscalatedGrievances, getFacilities, getPatients } from '../services/api';
 import { AlertOctagon, TrendingDown, Clock, ShieldAlert } from 'lucide-react';
 import LoadingSpinner from './LoadingSpinner';
+import { useAppSelector } from '../store/hooks';
+import { canWrite } from '../utils/permissions';
 
 export default function GrievanceTriage() {
+  const { user } = useAppSelector(s => s.auth);
   const [grievances, setGrievances] = useState<any[]>([]);
   const [facilities, setFacilities] = useState<any[]>([]);
   const [patients, setPatients] = useState<any[]>([]);
@@ -64,9 +67,11 @@ export default function GrievanceTriage() {
                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><ShieldAlert size={14} /> Patient: {pat?.Patient_Name || 'Anonymous'}</span>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Clock size={14} /> {g.Created_Date ? new Date(g.Created_Date).toLocaleDateString() : 'Recent'}</span>
                   </div>
-                  <button className="btn btn-outline" style={{ borderColor: '#ef4444', color: '#ef4444', padding: '0.4rem 0.75rem', fontSize: '0.85rem' }}>
-                    Escalate to Magistrate
-                  </button>
+                  {canWrite(user?.role) && (
+                    <button className="btn btn-outline" style={{ borderColor: '#ef4444', color: '#ef4444', padding: '0.4rem 0.75rem', fontSize: '0.85rem' }}>
+                      Escalate to Magistrate
+                    </button>
+                  )}
                 </div>
               </div>
             );
