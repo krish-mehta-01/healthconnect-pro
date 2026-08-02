@@ -317,17 +317,17 @@ export default function InventoryPage() {
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Add Inventory Item</h2>
-              <button className="btn-icon" onClick={() => setShowAddItem(false)}><X size={20} /></button>
+              <button className="btn-icon" onClick={() => setShowAddItem(false)} aria-label="Close"><X size={20} /></button>
             </div>
             <form onSubmit={handleAddItem} className="modal-body">
               <div className="form-group">
-                <label>Item Name</label>
-                <input type="text" value={newItem.Item_Name} onChange={e => setNewItem({ ...newItem, Item_Name: e.target.value })} required />
+                <label htmlFor="item-name">Item Name</label>
+                <input id="item-name" type="text" value={newItem.Item_Name} onChange={e => setNewItem({ ...newItem, Item_Name: e.target.value })} required />
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Category</label>
-                  <select value={newItem.Category} onChange={e => setNewItem({ ...newItem, Category: e.target.value })}>
+                  <label htmlFor="item-category">Category</label>
+                  <select id="item-category" value={newItem.Category} onChange={e => setNewItem({ ...newItem, Category: e.target.value })}>
                     <option>Consumables</option>
                     <option>Medicines</option>
                     <option>Equipment</option>
@@ -336,8 +336,8 @@ export default function InventoryPage() {
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>Min. Threshold</label>
-                  <input type="number" value={newItem.Minimum_Threshold} onChange={e => setNewItem({ ...newItem, Minimum_Threshold: Number(e.target.value) })} min={0} />
+                  <label htmlFor="item-threshold">Min. Threshold</label>
+                  <input id="item-threshold" type="number" value={newItem.Minimum_Threshold} onChange={e => setNewItem({ ...newItem, Minimum_Threshold: Number(e.target.value) })} min={0} />
                 </div>
               </div>
               <div className="modal-footer">
@@ -355,26 +355,26 @@ export default function InventoryPage() {
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2>New Supply Request</h2>
-              <button className="btn-icon" onClick={() => setShowRequest(false)}><X size={20} /></button>
+              <button className="btn-icon" onClick={() => setShowRequest(false)} aria-label="Close"><X size={20} /></button>
             </div>
             <form onSubmit={handleCreateRequest} className="modal-body">
               <div className="form-group">
-                <label>Facility</label>
-                <select value={newRequest.Facility_ID} onChange={e => setNewRequest({ ...newRequest, Facility_ID: e.target.value })} required>
+                <label htmlFor="req-facility">Facility</label>
+                <select id="req-facility" value={newRequest.Facility_ID} onChange={e => setNewRequest({ ...newRequest, Facility_ID: e.target.value })} required>
                   <option value="">Select facility...</option>
                   {facilities.map(f => <option key={f.ROWID} value={f.ROWID}>{f.Facility_Name}</option>)}
                 </select>
               </div>
               <div className="form-group">
-                <label>Item</label>
-                <select value={newRequest.Item_ID} onChange={e => setNewRequest({ ...newRequest, Item_ID: e.target.value })} required>
+                <label htmlFor="req-item">Item</label>
+                <select id="req-item" value={newRequest.Item_ID} onChange={e => setNewRequest({ ...newRequest, Item_ID: e.target.value })} required>
                   <option value="">Select item...</option>
                   {masterItems.map(i => <option key={i.ROWID} value={i.ROWID}>{i.Item_Name}</option>)}
                 </select>
               </div>
               <div className="form-group">
-                <label>Quantity</label>
-                <input type="number" value={newRequest.Quantity_Requested} onChange={e => setNewRequest({ ...newRequest, Quantity_Requested: Number(e.target.value) })} min={1} required />
+                <label htmlFor="req-qty">Quantity</label>
+                <input id="req-qty" type="number" value={newRequest.Quantity_Requested} onChange={e => setNewRequest({ ...newRequest, Quantity_Requested: Number(e.target.value) })} min={1} required />
               </div>
               <div className="modal-footer">
                 <button type="button" className="btn btn-ghost" onClick={() => setShowRequest(false)}>Cancel</button>

@@ -132,7 +132,7 @@ export default function ReportAuditTable() {
           <div className="card" style={{ width: '100%', maxWidth: '700px', margin: '1rem', background: 'var(--color-bg-card)', boxShadow: 'var(--shadow-xl)', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
             <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', flexShrink: 0 }}>
               <h3>Audit Report #{selectedReport.ROWID}</h3>
-              <button onClick={() => setSelectedReport(null)} style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer' }}><X size={20} /></button>
+              <button onClick={() => setSelectedReport(null)} aria-label="Close" style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer' }}><X size={20} /></button>
             </div>
             
             <div className="card-body" style={{ overflowY: 'auto', flex: 1, padding: '1.5rem' }}>
@@ -223,7 +223,7 @@ export default function ReportAuditTable() {
                           className="btn btn-outline"
                           onClick={() => handleAction('Rejected')}
                           disabled={actionLoading}
-                          style={{ color: '#ef4444', borderColor: '#ef4444', display: 'flex', gap: '0.5rem', alignItems: 'center' }}
+                          style={{ color: 'var(--color-danger-text)', borderColor: '#ef4444', display: 'flex', gap: '0.5rem', alignItems: 'center' }}
                         >
                           <X size={16} /> Reject Report
                         </button>
@@ -241,7 +241,7 @@ export default function ReportAuditTable() {
 
                 </div>
               ) : (
-                <div style={{ color: '#ef4444' }}>Failed to load details.</div>
+                <div style={{ color: 'var(--color-danger-text)' }}>Failed to load details.</div>
               )}
             </div>
           </div>

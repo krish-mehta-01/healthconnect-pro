@@ -58,7 +58,7 @@
 }
 
 .brand-icon {
-  color: var(--color-primary);
+  color: var(--color-primary-text);
   filter: drop-shadow(0 0 8px var(--color-primary-glow));
 }
 
@@ -70,7 +70,7 @@
 }
 
 .brand-pro {
-  color: var(--color-primary);
+  color: var(--color-primary-text);
 }
 
 .navbar-links {
@@ -99,7 +99,7 @@
 }
 
 .nav-link.active {
-  color: var(--color-primary);
+  color: var(--color-primary-text);
   background: rgba(13, 148, 136, 0.1);
 }
 
@@ -163,7 +163,7 @@
 .logout-btn:hover {
   background: rgba(239, 68, 68, 0.1);
   border-color: rgba(239, 68, 68, 0.3);
-  color: var(--color-danger);
+  color: var(--color-danger-text);
 }
 
 .mobile-toggle {
@@ -335,7 +335,7 @@
 
 .btn-danger-ghost:hover {
   background: rgba(239, 68, 68, 0.1);
-  color: var(--color-danger);
+  color: var(--color-danger-text);
 }
 
 /* ══════════════════════════════════════════════
@@ -443,7 +443,7 @@
 
 .kpi-trend.negative {
   background: rgba(239, 68, 68, 0.1);
-  color: var(--color-danger);
+  color: var(--color-danger-text);
 }
 
 .kpi-value {
@@ -828,7 +828,7 @@
 .filter-chip.active {
   background: rgba(13, 148, 136, 0.15);
   border-color: var(--color-primary);
-  color: var(--color-primary);
+  color: var(--color-primary-text);
 }
 
 /* ══════════════════════════════════════════════
@@ -866,7 +866,7 @@
 }
 
 .tab.active {
-  color: var(--color-primary);
+  color: var(--color-primary-text);
   border-bottom-color: var(--color-primary);
 }
 
@@ -902,7 +902,7 @@
 
 .chip-count {
   font-weight: 700;
-  color: var(--color-primary);
+  color: var(--color-primary-text);
   font-size: var(--text-lg);
 }
 
@@ -1059,7 +1059,7 @@
 .alert-banner.alert-danger {
   background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.2);
-  color: var(--color-danger);
+  color: var(--color-danger-text);
 }
 
 .alert-banner.alert-info {
@@ -1196,7 +1196,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  color: var(--color-danger);
+  color: var(--color-danger-text);
   font-size: var(--text-xs);
   font-weight: 600;
 }
@@ -1242,7 +1242,7 @@
 .feedback-facility {
   font-size: var(--text-xs);
   font-weight: 600;
-  color: var(--color-primary);
+  color: var(--color-primary-text);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -1403,7 +1403,7 @@
 }
 
 .login-hero-icon {
-  color: var(--color-primary);
+  color: var(--color-primary-text);
   margin-bottom: var(--space-4);
   filter: drop-shadow(0 0 16px var(--color-primary-glow));
   animation: heartbeat 2s ease-in-out infinite;
@@ -1447,7 +1447,7 @@
 }
 
 .login-feature svg {
-  color: var(--color-primary);
+  color: var(--color-primary-text);
   flex-shrink: 0;
 }
 

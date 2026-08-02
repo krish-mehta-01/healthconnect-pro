@@ -48,7 +48,7 @@ export default function Navbar() {
           <span className="brand-text">HealthConnect<span className="brand-pro">Pro</span></span>
         </div>
 
-        <button className="mobile-toggle" onClick={() => setMobileOpen(!mobileOpen)}>
+        <button className="mobile-toggle" onClick={() => setMobileOpen(!mobileOpen)} aria-label={mobileOpen ? 'Close menu' : 'Open menu'}>
           {mobileOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
 

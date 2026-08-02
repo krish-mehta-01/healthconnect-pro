@@ -131,8 +131,9 @@ export default function SubmitReportForm({ onSuccess }: Props) {
         <form onSubmit={handleReportSubmit}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <label style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>{t('facility')}</label>
+              <label htmlFor="srf-facility" style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>{t('facility')}</label>
               <select
+                id="srf-facility"
                 style={{ padding: '0.75rem', borderRadius: '8px', background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)' }}
                 value={selectedFacility}
                 onChange={e => setSelectedFacility(e.target.value)}
@@ -145,8 +146,9 @@ export default function SubmitReportForm({ onSuccess }: Props) {
               </select>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <label style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>{t('reportingCycle')}</label>
+              <label htmlFor="srf-cycle" style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>{t('reportingCycle')}</label>
               <select
+                id="srf-cycle"
                 style={{ padding: '0.75rem', borderRadius: '8px', background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)' }}
                 value={selectedCycle}
                 onChange={e => setSelectedCycle(e.target.value)}
@@ -209,8 +211,9 @@ export default function SubmitReportForm({ onSuccess }: Props) {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem' }}>
                   {deptIndicators.map(ind => (
                     <div key={ind.ROWID} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                      <label style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>{ind.Indicator_Name}</label>
+                      <label htmlFor={`srf-ind-${ind.ROWID}`} style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>{ind.Indicator_Name}</label>
                       <input
+                        id={`srf-ind-${ind.ROWID}`}
                         type="number"
                         placeholder={t('enterValue')}
                         style={{ padding: '0.75rem', borderRadius: '8px', background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)' }}
@@ -232,8 +235,9 @@ export default function SubmitReportForm({ onSuccess }: Props) {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem' }}>
                   {ungrouped.map(ind => (
                     <div key={ind.ROWID} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                      <label style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>{ind.Indicator_Name}</label>
+                      <label htmlFor={`srf-ind-${ind.ROWID}`} style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>{ind.Indicator_Name}</label>
                       <input
+                        id={`srf-ind-${ind.ROWID}`}
                         type="number"
                         placeholder={t('enterValue')}
                         style={{ padding: '0.75rem', borderRadius: '8px', background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)' }}

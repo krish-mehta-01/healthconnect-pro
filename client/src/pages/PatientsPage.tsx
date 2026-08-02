@@ -119,12 +119,13 @@ export default function PatientsPage() {
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2>{editingId ? 'Edit Patient Record' : 'Register New Patient'}</h2>
-              <button className="btn-icon" onClick={() => setShowForm(false)}><X size={20} /></button>
+              <button className="btn-icon" onClick={() => setShowForm(false)} aria-label="Close"><X size={20} /></button>
             </div>
             <form onSubmit={handleSubmit} className="modal-body">
               <div className="form-group">
-                <label>Full Name</label>
+                <label htmlFor="pat-name">Full Name</label>
                 <input
+                  id="pat-name"
                   type="text"
                   value={form.Patient_Name}
                   onChange={e => setForm({ ...form, Patient_Name: e.target.value })}
@@ -133,8 +134,9 @@ export default function PatientsPage() {
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Age</label>
+                  <label htmlFor="pat-age">Age</label>
                   <input
+                    id="pat-age"
                     type="number"
                     min={0}
                     value={form.Age}
@@ -143,8 +145,8 @@ export default function PatientsPage() {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Gender</label>
-                  <select value={form.Gender} onChange={e => setForm({ ...form, Gender: e.target.value })}>
+                  <label htmlFor="pat-gender">Gender</label>
+                  <select id="pat-gender" value={form.Gender} onChange={e => setForm({ ...form, Gender: e.target.value })}>
                     <option>Male</option>
                     <option>Female</option>
                     <option>Other</option>

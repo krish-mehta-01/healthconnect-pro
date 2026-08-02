@@ -265,18 +265,18 @@ export default function AdminPage() {
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Add {activeTab === 'departments' ? 'Department' : activeTab === 'cycles' ? 'Reporting Cycle' : activeTab === 'users' ? 'User' : 'Indicator'}</h2>
-              <button className="btn-icon" onClick={() => setShowForm(false)}><X size={20} /></button>
+              <button className="btn-icon" onClick={() => setShowForm(false)} aria-label="Close"><X size={20} /></button>
             </div>
 
             {activeTab === 'departments' && (
               <form onSubmit={handleCreateDept} className="modal-body">
                 <div className="form-group">
-                  <label>Department Name</label>
-                  <input type="text" value={deptForm.Dept_Name} onChange={e => setDeptForm({ ...deptForm, Dept_Name: e.target.value })} placeholder="e.g., Emergency & Trauma" required />
+                  <label htmlFor="dept-name">Department Name</label>
+                  <input id="dept-name" type="text" value={deptForm.Dept_Name} onChange={e => setDeptForm({ ...deptForm, Dept_Name: e.target.value })} placeholder="e.g., Emergency & Trauma" required />
                 </div>
                 <div className="form-group">
-                  <label>Head Officer</label>
-                  <select value={deptForm.Head_Officer_ID} onChange={e => setDeptForm({ ...deptForm, Head_Officer_ID: e.target.value })}>
+                  <label htmlFor="dept-head">Head Officer</label>
+                  <select id="dept-head" value={deptForm.Head_Officer_ID} onChange={e => setDeptForm({ ...deptForm, Head_Officer_ID: e.target.value })}>
                     <option value="">Unassigned</option>
                     {users.map(u => <option key={u.ROWID} value={u.ROWID}>{u.Full_Name} ({u.Role?.replace(/_/g, ' ')})</option>)}
                   </select>
@@ -291,22 +291,22 @@ export default function AdminPage() {
             {activeTab === 'cycles' && (
               <form onSubmit={handleCreateCycle} className="modal-body">
                 <div className="form-group">
-                  <label>Cycle Name</label>
-                  <input type="text" value={cycleForm.Cycle_Name} onChange={e => setCycleForm({ ...cycleForm, Cycle_Name: e.target.value })} placeholder="e.g., August 2026" required />
+                  <label htmlFor="cycle-name">Cycle Name</label>
+                  <input id="cycle-name" type="text" value={cycleForm.Cycle_Name} onChange={e => setCycleForm({ ...cycleForm, Cycle_Name: e.target.value })} placeholder="e.g., August 2026" required />
                 </div>
                 <div className="form-row">
                   <div className="form-group">
-                    <label>Start Date</label>
-                    <input type="date" value={cycleForm.Start_Date} onChange={e => setCycleForm({ ...cycleForm, Start_Date: e.target.value })} required />
+                    <label htmlFor="cycle-start">Start Date</label>
+                    <input id="cycle-start" type="date" value={cycleForm.Start_Date} onChange={e => setCycleForm({ ...cycleForm, Start_Date: e.target.value })} required />
                   </div>
                   <div className="form-group">
-                    <label>End Date</label>
-                    <input type="date" value={cycleForm.End_Date} onChange={e => setCycleForm({ ...cycleForm, End_Date: e.target.value })} required />
+                    <label htmlFor="cycle-end">End Date</label>
+                    <input id="cycle-end" type="date" value={cycleForm.End_Date} onChange={e => setCycleForm({ ...cycleForm, End_Date: e.target.value })} required />
                   </div>
                 </div>
                 <div className="form-group">
-                  <label>Status</label>
-                  <select value={cycleForm.Status} onChange={e => setCycleForm({ ...cycleForm, Status: e.target.value as 'Active' | 'Closed' })}>
+                  <label htmlFor="cycle-status">Status</label>
+                  <select id="cycle-status" value={cycleForm.Status} onChange={e => setCycleForm({ ...cycleForm, Status: e.target.value as 'Active' | 'Closed' })}>
                     <option value="Active">Active</option>
                     <option value="Closed">Closed</option>
                   </select>
@@ -321,13 +321,13 @@ export default function AdminPage() {
             {activeTab === 'indicators' && (
               <form onSubmit={handleCreateIndicator} className="modal-body">
                 <div className="form-group">
-                  <label>Indicator Name</label>
-                  <input type="text" value={indForm.Indicator_Name} onChange={e => setIndForm({ ...indForm, Indicator_Name: e.target.value })} placeholder="e.g., OPD Attendance" required />
+                  <label htmlFor="ind-name">Indicator Name</label>
+                  <input id="ind-name" type="text" value={indForm.Indicator_Name} onChange={e => setIndForm({ ...indForm, Indicator_Name: e.target.value })} placeholder="e.g., OPD Attendance" required />
                 </div>
                 <div className="form-row">
                   <div className="form-group">
-                    <label>Data Type</label>
-                    <select value={indForm.Data_Type} onChange={e => setIndForm({ ...indForm, Data_Type: e.target.value as Indicator['Data_Type'] })}>
+                    <label htmlFor="ind-type">Data Type</label>
+                    <select id="ind-type" value={indForm.Data_Type} onChange={e => setIndForm({ ...indForm, Data_Type: e.target.value as Indicator['Data_Type'] })}>
                       <option value="number">Number</option>
                       <option value="percentage">Percentage</option>
                       <option value="text">Text</option>
@@ -335,8 +335,8 @@ export default function AdminPage() {
                     </select>
                   </div>
                   <div className="form-group">
-                    <label>Department</label>
-                    <select value={indForm.Dept_ID} onChange={e => setIndForm({ ...indForm, Dept_ID: e.target.value })} required>
+                    <label htmlFor="ind-dept">Department</label>
+                    <select id="ind-dept" value={indForm.Dept_ID} onChange={e => setIndForm({ ...indForm, Dept_ID: e.target.value })} required>
                       <option value="">Select department...</option>
                       {departments.map(d => <option key={d.ROWID} value={d.ROWID}>{d.Dept_Name}</option>)}
                     </select>
@@ -352,31 +352,31 @@ export default function AdminPage() {
             {activeTab === 'users' && (
               <form onSubmit={handleCreateUser} className="modal-body">
                 <div className="form-group">
-                  <label>Full Name</label>
-                  <input type="text" value={userForm.name} onChange={e => setUserForm({ ...userForm, name: e.target.value })} placeholder="e.g., Dr. Rajesh Thakur" required />
+                  <label htmlFor="user-name">Full Name</label>
+                  <input id="user-name" type="text" value={userForm.name} onChange={e => setUserForm({ ...userForm, name: e.target.value })} placeholder="e.g., Dr. Rajesh Thakur" required />
                 </div>
                 <div className="form-group">
-                  <label>Email Address</label>
-                  <input type="email" value={userForm.email_id} onChange={e => setUserForm({ ...userForm, email_id: e.target.value })} placeholder="name@healthconnect.gov.in" required />
+                  <label htmlFor="user-email">Email Address</label>
+                  <input id="user-email" type="email" value={userForm.email_id} onChange={e => setUserForm({ ...userForm, email_id: e.target.value })} placeholder="name@healthconnect.gov.in" required />
                 </div>
                 <div className="form-row">
                   <div className="form-group">
-                    <label>Role</label>
-                    <select value={userForm.role} onChange={e => setUserForm({ ...userForm, role: e.target.value as UserRole })}>
+                    <label htmlFor="user-role">Role</label>
+                    <select id="user-role" value={userForm.role} onChange={e => setUserForm({ ...userForm, role: e.target.value as UserRole })}>
                       {ALL_ROLES.map(r => <option key={r} value={r}>{r.replace(/_/g, ' ')}</option>)}
                     </select>
                   </div>
                   <div className="form-group">
-                    <label>Facility</label>
-                    <select value={userForm.facility_id} onChange={e => setUserForm({ ...userForm, facility_id: e.target.value })} required>
+                    <label htmlFor="user-facility">Facility</label>
+                    <select id="user-facility" value={userForm.facility_id} onChange={e => setUserForm({ ...userForm, facility_id: e.target.value })} required>
                       <option value="">Select facility...</option>
                       {facilities.map(f => <option key={f.ROWID} value={f.ROWID}>{f.Facility_Name}</option>)}
                     </select>
                   </div>
                 </div>
                 <div className="form-group">
-                  <label>Password (optional)</label>
-                  <input type="password" value={userForm.password} onChange={e => setUserForm({ ...userForm, password: e.target.value })} placeholder="Leave blank to auto-generate" />
+                  <label htmlFor="user-password">Password (optional)</label>
+                  <input id="user-password" type="password" value={userForm.password} onChange={e => setUserForm({ ...userForm, password: e.target.value })} placeholder="Leave blank to auto-generate" />
                 </div>
                 <div className="modal-footer">
                   <button type="button" className="btn btn-ghost" onClick={() => setShowForm(false)}>Cancel</button>

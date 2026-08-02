@@ -129,8 +129,9 @@ export default function ReportDetailPage() {
       {/* Reject Form */}
       {showRejectForm && (
         <div className="card reject-form">
-          <h3>Rejection Notes</h3>
+          <h3 id="reject-notes-heading">Rejection Notes</h3>
           <textarea
+            aria-labelledby="reject-notes-heading"
             value={rejectNotes}
             onChange={e => setRejectNotes(e.target.value)}
             placeholder="Provide reason for rejection..."

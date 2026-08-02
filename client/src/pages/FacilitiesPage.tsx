@@ -126,12 +126,13 @@ export default function FacilitiesPage() {
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2>{editingId ? 'Edit Facility' : 'Onboard New Facility'}</h2>
-              <button className="btn-icon" onClick={() => setShowForm(false)}><X size={20} /></button>
+              <button className="btn-icon" onClick={() => setShowForm(false)} aria-label="Close"><X size={20} /></button>
             </div>
             <form onSubmit={handleSubmit} className="modal-body">
               <div className="form-group">
-                <label>Facility Name</label>
+                <label htmlFor="fac-name">Facility Name</label>
                 <input
+                  id="fac-name"
                   type="text"
                   value={form.Facility_Name}
                   onChange={e => setForm({ ...form, Facility_Name: e.target.value })}
@@ -141,8 +142,8 @@ export default function FacilitiesPage() {
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Type</label>
-                  <select value={form.Type} onChange={e => setForm({ ...form, Type: e.target.value as Facility['Type'] })}>
+                  <label htmlFor="fac-type">Type</label>
+                  <select id="fac-type" value={form.Type} onChange={e => setForm({ ...form, Type: e.target.value as Facility['Type'] })}>
                     <option value="HWC">Health & Wellness Centre</option>
                     <option value="Sub_Center">Sub Centre</option>
                     <option value="PHC">Primary Health Centre</option>
@@ -153,8 +154,9 @@ export default function FacilitiesPage() {
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>Capacity (Beds)</label>
+                  <label htmlFor="fac-capacity">Capacity (Beds)</label>
                   <input
+                    id="fac-capacity"
                     type="number"
                     value={form.Capacity}
                     onChange={e => setForm({ ...form, Capacity: Number(e.target.value) })}
@@ -164,8 +166,9 @@ export default function FacilitiesPage() {
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>District</label>
+                  <label htmlFor="fac-district">District</label>
                   <input
+                    id="fac-district"
                     type="text"
                     value={form.District}
                     onChange={e => setForm({ ...form, District: e.target.value })}
@@ -174,8 +177,9 @@ export default function FacilitiesPage() {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Block</label>
+                  <label htmlFor="fac-block">Block</label>
                   <input
+                    id="fac-block"
                     type="text"
                     value={form.Block}
                     onChange={e => setForm({ ...form, Block: e.target.value })}

@@ -172,19 +172,19 @@ export default function FeedbackPage() {
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Log Patient Feedback</h2>
-              <button className="btn-icon" onClick={() => setShowForm(false)}><X size={20} /></button>
+              <button className="btn-icon" onClick={() => setShowForm(false)} aria-label="Close"><X size={20} /></button>
             </div>
             <form onSubmit={handleSubmit} className="modal-body">
               <div className="form-group">
-                <label>Facility</label>
-                <select value={form.Facility_ID} onChange={e => setForm({ ...form, Facility_ID: e.target.value })} required>
+                <label htmlFor="fb-facility">Facility</label>
+                <select id="fb-facility" value={form.Facility_ID} onChange={e => setForm({ ...form, Facility_ID: e.target.value })} required>
                   <option value="">Select facility...</option>
                   {facilities.map(f => <option key={f.ROWID} value={f.ROWID}>{f.Facility_Name}</option>)}
                 </select>
               </div>
               <div className="form-group">
-                <label>Patient</label>
-                <select value={form.Patient_ID} onChange={e => setForm({ ...form, Patient_ID: e.target.value })} required>
+                <label htmlFor="fb-patient">Patient</label>
+                <select id="fb-patient" value={form.Patient_ID} onChange={e => setForm({ ...form, Patient_ID: e.target.value })} required>
                   <option value="">Select patient...</option>
                   {patients
                     .filter(p => !form.Facility_ID || p.Facility_ID === form.Facility_ID)
@@ -192,8 +192,9 @@ export default function FeedbackPage() {
                 </select>
               </div>
               <div className="form-group">
-                <label>Feedback Text</label>
+                <label htmlFor="fb-text">Feedback Text</label>
                 <textarea
+                  id="fb-text"
                   value={form.Feedback_Text}
                   onChange={e => setForm({ ...form, Feedback_Text: e.target.value })}
                   placeholder="e.g., The ward heating is broken and the patient is suffering from hypothermia..."

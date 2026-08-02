@@ -131,13 +131,14 @@ export default function LoginPage() {
             </button>
           </div>
 
-          {error && <div style={{ color: '#ef4444', marginBottom: '1rem', fontSize: '0.9rem', textAlign: 'center' }}>{error}</div>}
+          {error && <div style={{ color: 'var(--color-danger-text)', marginBottom: '1rem', fontSize: '0.9rem', textAlign: 'center' }}>{error}</div>}
 
           <form className="auth-form" onSubmit={handleSubmit}>
             {isSignUp && (
               <div className="auth-input-group">
-                <label>{t('fullName')}</label>
+                <label htmlFor="signup-name">{t('fullName')}</label>
                 <input
+                  id="signup-name"
                   type="text"
                   className="auth-input"
                   placeholder="e.g. Dr. Rajesh Thakur"
@@ -149,8 +150,9 @@ export default function LoginPage() {
             )}
 
             <div className="auth-input-group">
-              <label>{t('emailAddress')}</label>
+              <label htmlFor="auth-email">{t('emailAddress')}</label>
               <input
+                id="auth-email"
                 type="email"
                 className="auth-input"
                 placeholder="name@healthconnect.gov.in"
@@ -161,8 +163,9 @@ export default function LoginPage() {
             </div>
 
             <div className="auth-input-group">
-              <label>{t('password')}</label>
+              <label htmlFor="auth-password">{t('password')}</label>
               <input
+                id="auth-password"
                 type="password"
                 className="auth-input"
                 placeholder="••••••••"
@@ -175,8 +178,9 @@ export default function LoginPage() {
             {isSignUp && (
               <>
                 <div className="auth-input-group">
-                  <label>{t('role')}</label>
+                  <label htmlFor="signup-role">{t('role')}</label>
                   <select
+                    id="signup-role"
                     className="auth-select"
                     value={role}
                     onChange={(e) => setRole(e.target.value)}
@@ -213,8 +217,9 @@ export default function LoginPage() {
                 </div>
 
                 <div className="auth-input-group">
-                  <label>{t('facilityCode')}</label>
+                  <label htmlFor="signup-facility">{t('facilityCode')}</label>
                   <input
+                    id="signup-facility"
                     type="text"
                     className="auth-input"
                     placeholder="e.g. 59526000000027011"

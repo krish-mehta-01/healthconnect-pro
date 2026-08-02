@@ -39,7 +39,7 @@ export default function GeminiWidget() {
   return (
     <div className={`gemini-widget ${isOpen ? 'open' : ''}`}>
       {!isOpen && (
-        <button className="gemini-fab" onClick={() => setIsOpen(true)}>
+        <button className="gemini-fab" onClick={() => setIsOpen(true)} aria-label="Open AI assistant chat">
           <Sparkles size={24} />
         </button>
       )}

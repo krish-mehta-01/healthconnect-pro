@@ -18,6 +18,14 @@
   --color-text-secondary: #cbd5e1;
   --color-text-muted: #94a3b8;
   --color-text-heading: #ffffff;
+
+  /* Text-on-dark-surface variants of primary/danger — the base --color-primary/
+     --color-danger values below fail WCAG AA 4.5:1 for small/normal text on this theme's
+     backgrounds (confirmed via axe-core: e.g. #0d9488 on #1a2436 is 4.16:1, needs 4.5:1).
+     Used only where these colors render as actual text, not backgrounds/borders/icon fills
+     (those have different, already-passing contrast pairings). */
+  --color-primary-text: #14b8a6;
+  --color-danger-text: #f87171;
 }
 
 .light {
@@ -35,6 +43,12 @@
   --color-text-secondary: #475569;
   --color-text-muted: #64748b;
   --color-text-heading: #0f172a;
+
+  /* Light-theme text-on-white variants — the dark-theme values above (#14b8a6/#f87171) are
+     too light against a white background (2.49:1 / 2.77:1), so this theme needs darker
+     shades of the same brand colors to hit 4.5:1 here instead. */
+  --color-primary-text: #0f766e;
+  --color-danger-text: #dc2626;
 }
 
 :root {

@@ -93,7 +93,7 @@ export default function ResourceTransferModal() {
       <div className="card" style={{ marginBottom: '2rem', borderColor: 'var(--color-primary)' }}>
         <div className="card-header" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <PackageOpen size={20} color="var(--color-primary)" />
-          <h3 style={{ color: 'var(--color-primary)' }}>Smart Resource Re-Routing</h3>
+          <h3 style={{ color: 'var(--color-primary-text)' }}>Smart Resource Re-Routing</h3>
         </div>
         <div className="card-body">
           <p style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)', marginBottom: '1rem' }}>
@@ -126,7 +126,7 @@ export default function ResourceTransferModal() {
           <div className="card" style={{ width: '100%', maxWidth: '500px', margin: '1rem', background: 'var(--color-bg-card)', boxShadow: 'var(--shadow-xl)' }}>
             <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between' }}>
               <h3>Re-Route Approval</h3>
-              <button onClick={() => setActiveRequest(null)} style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer' }}><X size={20} /></button>
+              <button onClick={() => setActiveRequest(null)} aria-label="Close" style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer' }}><X size={20} /></button>
             </div>
             <div className="card-body">
               {successMsg ? (

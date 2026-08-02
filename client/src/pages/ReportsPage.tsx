@@ -149,12 +149,13 @@ export default function ReportsPage() {
           <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Create Monthly Health Report</h2>
-              <button className="btn-icon" onClick={() => setShowCreate(false)}><X size={20} /></button>
+              <button className="btn-icon" onClick={() => setShowCreate(false)} aria-label="Close"><X size={20} /></button>
             </div>
             <form onSubmit={handleCreateReport} className="modal-body">
               <div className="form-group">
-                <label>Facility</label>
+                <label htmlFor="report-facility">Facility</label>
                 <select
+                  id="report-facility"
                   value={newReport.facility_id}
                   onChange={e => setNewReport({ ...newReport, facility_id: e.target.value })}
                   required
@@ -170,8 +171,9 @@ export default function ReportsPage() {
               <div className="indicators-grid">
                 {indicators.length > 0 ? indicators.map(ind => (
                   <div key={ind.ROWID} className="indicator-input">
-                    <label>{ind.Indicator_Name}</label>
+                    <label htmlFor={`report-ind-${ind.ROWID}`}>{ind.Indicator_Name}</label>
                     <input
+                      id={`report-ind-${ind.ROWID}`}
                       type="number"
                       value={newReport.values[ind.ROWID] || ''}
                       onChange={e => setNewReport({
